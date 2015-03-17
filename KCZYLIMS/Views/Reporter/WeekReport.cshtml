@@ -39,9 +39,11 @@
     }
     function btnSearch_onclick() {
         var data = $("#txtParticipants").val();
+
+        data +=";"+ $("#WeekYearStart").val() + ";" + $("#WeekNumberStart").val() + ";" + $("#WeekYearEnd").val() + ";" + $("#WeekNumberEnd").val();
         if(data!=""){
             $("#gvPhaseAnalysis").wyGrid({
-                allowAjax: true, urlPath: "../Reporter/GetSearchDataSet", pageSize: 20, funcAjaxCallBack: AjaxCallBack, entityName: data
+                allowAjax: true, urlPath: "../Reporter/GetSearchDataSet", pageSize: 20, funcAjaxCallBack: AjaxCallBack, entityName: data,allowSelected:false
             });
         }
 
@@ -56,7 +58,7 @@
 <script id="product_template" type="text/x-jsrender">
     <tr>
         <td class="GridNumeric ID_Col">{{>MyID}}</td>
-        <td><a onclick="openDialogWindow('../Reporter/Index?MyID={{>MyID}}', '', '')" href="javascript:;">{{>MyName}} </a></td>
+        <td><a onclick="openDialogWindow('../Reporter/Index?MyID={{>MyID}}', '', '','')" href="javascript:;">{{>MyName}} </a></td>
         <td>{{>WeekYear}}第{{>WeekNum}}周</td>
         <td>{{>ModifiedBy}}</td>
         <td>{{>LastModified}}</td>

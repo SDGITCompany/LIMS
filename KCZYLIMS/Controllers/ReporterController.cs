@@ -68,9 +68,16 @@ namespace KCZYLIMS.Controllers
             return Json(new {Result = true});
         }
 
-        public JsonResult GetSearchDataSet(IndexInfo index,int sYear,int sNum,int eYear,int eNum)
+        public JsonResult GetSearchDataSet(IndexInfo index)
         {
-            string sData = index.EntityName;
+            var words = index.EntityName.Split(';');
+            string sData = words[0];
+
+            int sYear = XConvert.ToInt32(words[1]);
+            int sNum = XConvert.ToInt32(words[2]);
+            int eYear = XConvert.ToInt32(words[3]);
+            int eNum = XConvert.ToInt32(words[4]);
+
             List<kczy_WeekReport> data = null;
             var userKeys = sData.Split('#');
             if (userKeys.Length != 0)
@@ -99,7 +106,7 @@ namespace KCZYLIMS.Controllers
 
             }
 
-            return Json(new { Result = true, Data = data,Index =index });
+            return Json(new { Result = true, Data = data,IndexInfo =index });
         }
         ///
 

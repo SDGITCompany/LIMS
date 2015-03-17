@@ -76,10 +76,12 @@ namespace KCZYLIMS.BLL
             {
                 var projectAttorneys = (
                     from obj in db.kczy_WeekReport
-                    where obj.IsDeleted != true && userIDList.Contains(obj.CreatorID) && CompairDatetime(obj.WeekYear, obj.WeekNum, sYear, sNum, eYear, eNum)
+                    /*where obj.IsDeleted != true && userIDList.Contains(obj.CreatorID) && CompairDatetime(obj.WeekYear, obj.WeekNum, sYear, sNum, eYear, eNum)*/
+                    where obj.IsDeleted != true && userIDList.Contains(obj.CreatorID) 
+                    
                     orderby obj.CreateDate descending
                     select obj);
-                var data = projectAttorneys
+                var data = projectAttorneys.ToList().Where(obj => CompairDatetime(obj.WeekYear, obj.WeekNum, sYear, sNum, eYear, eNum))
                     .Skip(indexStart).
                     Take(index.PageSize);
                 index.TotalCount = projectAttorneys.Count();
