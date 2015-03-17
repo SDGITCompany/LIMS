@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KCZYLIMS", "KCZYLIMS\KCZYLIMS.csproj", "{0305C29B-EFC4-4948-8221-A1C325AB8F52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KCZYLIMS.Tests", "KCZYLIMS.Tests\KCZYLIMS.Tests.csproj", "{249E7528-5EB8-4639-87F9-6FDE1DA16ECB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlDataAccess", "SqlDataAccess\SqlDataAccess.csproj", "{D962E6B5-E0CA-4959-B509-77BD4F00482A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01 Data Access Layer", "01 Data Access Layer", "{F4F4C237-04B3-4E79-872E-ACDC670E0653}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KCZYLIMSTests", "KCZYLIMSTests\KCZYLIMSTests.csproj", "{77DA128F-DBB3-42D4-BA17-9114E7CA3A29}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 5
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://192.168.40.18:8080/tfs/defaultcollection
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = KCZYLIMS.Tests\\KCZYLIMS.Tests.csproj
+		SccProjectName1 = KCZYLIMS.Tests
+		SccLocalPath1 = KCZYLIMS.Tests
+		SccProjectUniqueName2 = KCZYLIMS\\KCZYLIMS.csproj
+		SccProjectName2 = KCZYLIMS
+		SccLocalPath2 = KCZYLIMS
+		SccProjectUniqueName3 = SqlDataAccess\\SqlDataAccess.csproj
+		SccProjectTopLevelParentUniqueName3 = KCZYLIMS.sln
+		SccProjectName3 = SqlDataAccess
+		SccLocalPath3 = SqlDataAccess
+		SccProjectUniqueName4 = KCZYLIMSTests\\KCZYLIMSTests.csproj
+		SccProjectName4 = KCZYLIMSTests
+		SccLocalPath4 = KCZYLIMSTests
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0305C29B-EFC4-4948-8221-A1C325AB8F52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0305C29B-EFC4-4948-8221-A1C325AB8F52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0305C29B-EFC4-4948-8221-A1C325AB8F52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0305C29B-EFC4-4948-8221-A1C325AB8F52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{249E7528-5EB8-4639-87F9-6FDE1DA16ECB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{249E7528-5EB8-4639-87F9-6FDE1DA16ECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{249E7528-5EB8-4639-87F9-6FDE1DA16ECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{249E7528-5EB8-4639-87F9-6FDE1DA16ECB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D962E6B5-E0CA-4959-B509-77BD4F00482A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D962E6B5-E0CA-4959-B509-77BD4F00482A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D962E6B5-E0CA-4959-B509-77BD4F00482A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D962E6B5-E0CA-4959-B509-77BD4F00482A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77DA128F-DBB3-42D4-BA17-9114E7CA3A29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77DA128F-DBB3-42D4-BA17-9114E7CA3A29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77DA128F-DBB3-42D4-BA17-9114E7CA3A29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77DA128F-DBB3-42D4-BA17-9114E7CA3A29}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D962E6B5-E0CA-4959-B509-77BD4F00482A} = {F4F4C237-04B3-4E79-872E-ACDC670E0653}
+	EndGlobalSection
+EndGlobal

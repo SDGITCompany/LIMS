@@ -1,0 +1,196 @@
+﻿@{
+    ViewBag.Title = "ChemicalPhaseAnalysis";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml"; 
+}
+@model KCZYLIMS.Models.kczy_ExperimentStatusBaseInfoMD
+<script src="@Url.Content("~/Scripts/xPlugin/jquery.spreadtable.js")" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        //动态增行
+        $("#spread").spreadtable({ "ItemID": getUrlQueryString('ItemID'), "url": "../ProcessMineralogyAPI/ChemicalPhaseAnalysisRecord" });
+        if ("@Model.IsSubmit" == "True") {
+            $("#tdEdit").hide();
+            $("#tdSubmit").show();
+        }
+        var status = getUrlQueryString('Status');
+        if (status == "CompletedStatus") {
+            $("#tdEdit").hide();
+            $("#tdSubmit").hide();
+            $("input").attr("disabled", "disabled");
+        }
+        $("#btnEdit").click(function () {
+            $.ajax({
+                type: 'post',
+                url: '../ProcessMineralogyAPI/UpdateExperimentStatusBaseInfo', //路径为添加方法
+                data: $('#MainFrm').serialize(), //参数的个数和名字要和方法的名字保持一致
+                success: function (json) //返回的是Json类型的
+                {
+                    if (json.Result == true) {
+                        //alert(json.Result);
+                        SaveAttachment();
+                        $("#spread").OnSave();
+                        parent.parent.parent.layer.msg('已完成！', 2, 1);
+                        
+                        
+                    }
+                }
+            });
+
+           // parent.parent.layer.alert('编辑成功', 1);
+        });
+        $("#submit").click(function () {
+            $.ajax({
+                type: 'post',
+                url: '../ProcessMineralogyAPI/UpdateExperimentStatusBaseInfo', //路径为添加方法
+                async: false, //同步
+                data: $('#MainFrm').serialize(), //参数的个数和名字要和方法的名字保持一致
+                success: function (json) //返回的是Json类型的
+                {
+                    if (json.Result == true) {
+                        //alert(json.Result);
+                        $("#spread").OnSave();
+                        //
+                        SaveAttachment();
+                    }
+                }
+            });
+            var userLists = "";
+            $("input[type=checkbox]:checked").each(function () {
+                userLists += $(this).val() + ";";
+                $("#ApproveMyNote").val();
+            });
+            $.ajax({
+                type: "POST", //默认是GET
+                url: "../ProcessMineralogyAPI/SubmitExperimentStatusBaseInfo", //调用WebService的地址和方法名称组合 ---- WsURL/方法名
+                data: $('#MainFrm').serialize(),
+                async: false, //同步
+                cache: false, //不加载缓存
+                success: function (json) {
+                    //返回的result就是json格式的
+                    //var tmp = "";
+                    if (json.Result == true) {
+                        parent.parent.parent.layer.msg('已完成！', 2, 1);
+                    parent.window.location.href = parent.window.location.href;
+}
+                },
+                error: function () {
+                    alert("提交失败");
+                }
+            });
+
+        });
+        //下载附件
+        $("body").on("click", ".span-attachment", function (event) {
+            var ahref = $(this).find("a");
+            var attid = $(ahref).attr('attr_id');
+            var attrPath = $(ahref).attr('attr_path');
+            var attrFileName = $(ahref).attr('attr_filename');
+            $('#ifDownloadpage').attr('src', '../Portal/DownloadPage' + '?AttachID=' + attid + "&OrigPath=" + attrPath + "&FileName=" + attrFileName);
+        });
+        //上传附件
+        $('#lbtnBaseUpload').attachmentInit({ RelatedID: "@Model.MyID", RelatedType: 3, DivId: 'divBaseUpload' });
+    });
+    //保存附件
+    function SaveAttachment() {
+        //保存单个的附件
+        $('#lbtnBaseUpload').attachmentSave({ RelatedID: "@Model.MyID", RelatedType: 3, DivId: 'divBaseUpload' });
+    }//end o func
+</script>
+<form id="MainFrm">
+    <div>
+        <div>
+            <table id="Table3" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="TableHeader">
+                            化学物相分析结果
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <input id="txtMyID" class="display_none" type="text" value="@Model.MyID" name="MyID" />
+            <input id="txtItemID" class="display_none" type="text" value="@Model.ItemID" name="ItemID" />
+            <input id="txtOrigID" class="display_none" type="text" value="@Model.OrigID" name="OrigID" />
+            <input id="txtType" class="display_none" type="text" value="@Model.Type" name="Type" />
+            <input id="txtCreateBy" title="创建人" class="display_none" value="@Model.CreateBy" name="CreateBy"></input>
+            <input id="txtCreater" title="创建人" class="display_none" value="@Model.CreatorID" name="CreatorID"></input>
+            <input id="txtCreatDate" title="创建时间" class="display_none" value="@Model.CreateDate" name="CreateDate"></input>
+            <div>
+                <table id="spread" style="width:100%">
+                    <tr>
+                        <th class="TableLabel" style="background-color: transparent;"></th>
+                        <th class="TableLabelNoWidth ">编号</th>
+                        <th class="TableLabelNoWidth">金属元素</th>
+                        <th class="TableLabelNoWidth ">相别</th>
+                        <th class="TableLabelNoWidth">占有率(%)</th>
+                        <th class="TableLabelNoWidth">含量(%)</th>
+                    </tr>
+                    <tr class="row_tpl">
+                        <td>
+                            <a class="x-spread-add">
+                                <span class="k-icon k-i-close link-blue">新增</span>
+                            </a>
+                            <a class="x-spread-del">
+                                <span class="k-icon k-i-close  link-blue">删除</span>
+                            </a>
+                        </td>
+                        <td>
+                            <input type="text" class="k-textbox Width90" value="" prop_name="Code" />
+                            <input type="text" class="k-textbox Width90" prop_name="MyID" style="display:none" value="0" />
+                        </td>
+                        <td>
+                            <span class="content-show"></span>
+                            <input type="text" class="k-textbox Width90" value="" prop_name="MetalElement" />
+                        </td>
+                        <td>
+                            <span class="content-show"></span>
+                            <input type="text" class="k-textbox Width90" value="" prop_name="Phase" />
+                        </td>
+                        <td>
+                            <span class="content-show"></span>
+                            <input type="text" class="k-textbox Width90" value="" prop_name="Occupancy" />
+                        </td>
+                        <td>
+                            <span class="content-show"></span>
+                            <input type="text" class="k-textbox Width90" value="" prop_name="Content" />
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+        <table id="Table5" class="App_TableBlock" align="center" border="0" cellspacing="0"
+               width="100%">
+            <tbody>
+                <tr id="page1_block1_row7" expland="true">
+                    <td width="150" nowrap="" class="TableLabel">
+                        <input type="button" value="上传附件" class="btn-red" id="lbtnBaseUpload">
+                    </td>
+                    <td colspan="7" class="TableData Width90">
+                        <div style="margin: 0 0 5px 0px" id="divBaseUpload">
+
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <center>
+        <iframe id="ifDownloadpage" style="display:none;"></iframe>
+        <table style="margin: 5px 0">
+            <tbody>
+                <tr align="center">
+                    <td id="tdEdit">
+                        <input value="保存" class="btn-blue" type="button" id="btnEdit" />
+                        <input value="完成" class="btn-blue" type="button" id="submit" />
+                    </td>
+                    <td id="tdSubmit" class="display_none">
+                        <span><img src="@Url.Content("~/Content/Images/submited.png")" /></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </center>
+</form>

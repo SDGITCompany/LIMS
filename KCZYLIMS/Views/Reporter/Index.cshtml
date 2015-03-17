@@ -1,0 +1,193 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = null;
+}
+
+@model KCZYLIMS.Models.kczy_WeekReportMD
+<link href="@Url.Content("~/Content/global.css")" rel="stylesheet" />
+<link href="@Url.Content("~/Content/Style.css")" rel="stylesheet" />
+<link href="@Url.Content("~/Scripts/Third/Datepicker/skin/WdatePicker.css")" rel="stylesheet" />
+<script src="@Url.Content("~/Scripts/jquery.min.js")"></script>
+<script src="@Url.Content("~/Scripts/Third/Datepicker/WdatePicker.js")"></script>
+<script src="@Url.Content("~/Scripts/XGrid/jquery.xForm.Validate.js")"></script>
+<script src="@Url.Content("~/Scripts/XGrid/Common.js")"></script>
+<script>
+    $(function () {
+        $("#btnSave").click(function () {
+            if (checkForm()) {
+                $.ajax({
+                    type: 'post',
+                    url: '../Reporter/CreateOrUpdate', //路径为添加方法
+                    data: $("form").serialize(), //参数的个数和名字要和方法的名字保持一致
+                    success: function (json) //返回的是Json类型的
+                    {
+                        if (json.Result == true) {
+                            window.top.layer.msg('保存成功', 2, 1);
+                        }
+                    }
+                });
+            }
+
+        });
+        if ($("#byWeek").val() == "") {
+            var date = new Date();
+            /*            var d = myDate.getFullYear()+"-" + myDate.getMonth()+"-" + myDate.getDay();*/
+            /*var d = myDate.toLocaleDateString();*/
+            var d = getdate;
+            $("#byWeek").val(d);
+        }
+    });
+    function ParticipantResponsorSetter() {
+        var strRetValue = $('#hfValue').val();
+        var parNames = "";
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 3) {
+                parNames = parNames + "#" + words[0] + "|" + words[1] + "|" + words[2];
+                $('#IFProjectAttorney').contents().find('#divParticipants').append('<span  onmouseover="show_delete(this)" onmouseout="hide_delete(this)" >' + words[2] + '<a href="javascript:void(0)" class="selecter_delete" style="display: none;"  onclick="delete_click(this)" attr_id=' + words[0] + ' attr_type=' + words[1] + ' attr_name=' + words[2] + '></a></span>&nbsp;');
+            }
+        }
+        $('#IFProjectAttorney').contents().find('#txtParticipants').val(parNames);
+        window.parent.$('.xubox_close')[1].click();
+    }
+    function getdate() {
+        var now = new Date();
+        var y = now.getFullYear();
+        var m = now.getMonth() + 1;
+        var d = now.getDate();
+        m = m < 10 ? "0" + m : m;
+        d = d < 10 ? "0" + d : d;
+        return y + "-" + m + "-" + d;
+    }
+</script>
+@using (Html.BeginForm())
+{
+
+    <table width="100%" cellspacing="0" border="0" align="center" class="App_TableBlock" id="Table2">
+        <tbody>
+            <tr>
+                <td class="TableHeader" colspan="8">
+                    <a style="color: #383838; cursor: pointer;" id="projectAttorney">工作周报内容</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="table-wrapper">
+
+        <table width="100%" cellspacing="0" border="0" align="center" class="App_TableBlock" id="page1_block1">
+            <tbody>
+
+                <tr id="Tr1" expland="true">
+                    <td width="150" nowrap="" class="TableLabel Red">
+                        <span class="TableContent  " title="周报名称">周报名称</span>
+                    </td>
+                    <td class="TableData Width40">
+                        @Html.TextBox("MyName", Model.MyName, new { @class = "InputField Width80",@require="must" })
+                    </td>
+                    <td width="150" nowrap="" class="TableLabel Red">
+                        <span class="TableContent  " title="周报编号">周报编号</span>
+                    </td>
+                    <td class="TableData Width40">
+                        @Html.TextBox("MyID", Model.MyID, new { @class = "InputField Width80", @readOnly = true })
+                    </td>
+                </tr>
+                <tr id="Tr1" expland="true">
+                    <td width="150" nowrap="" class="TableLabel">
+                        <span class="TableContent  " title="周报时间">周报时间</span>
+                    </td>
+                    <td class="TableData Width40" >
+                        <input type="text" class="Wdate" id="byWeek" onfocus="WdatePicker({ isShowWeek: true, onpicked: function () { $dp.$('WeekYear').value = $dp.cal.getP('y', 'yyyy'); $dp.$('WeekNum').value = $dp.cal.getP('W', 'W'); } })" />
+                    </td>
+                    <td width="150" nowrap="" class="TableLabel">
+                        <span class="TableContent  " title="周报备注">周报备注</span>
+                    </td>
+                    <td class="TableData Width40" >
+                        @Html.TextBox("WeekYear", Model.WeekYear, new { @class = "InputField Width20", @readOnly=true })年第
+                        @Html.TextBox("WeekNum", Model.WeekNum, new { @class = "InputField Width20", @readOnly = true })周
+                       
+                    </td>
+                </tr>
+                <tr id="Tr1" expland="true">
+                    <td width="150" nowrap="" class="TableLabel">
+                        <span class="TableContent  " title="正在进行的项目">正在进行的项目</span>
+                    </td>
+                    <td colspan="3" class="TableData Width90">
+                        @Html.TextArea("ContentCurrent", Model.ContentCurrent, new { @class = "InputField Width90", @rows = 5 })
+                    </td>
+                </tr>
+                <tr id="Tr2" expland="true">
+                    <td width="150" nowrap="" class="TableLabel">
+                        <span class="TableContent  " title="上周工作汇报及存在的问题">上周工作汇报及存在的问题</span>
+                    </td>
+                    <td colspan="3" class="TableData Width90">
+
+                        @Html.TextArea("ContentLast", Model.ContentLast, new { @class = "InputField Width90", @rows = 5 })
+                    </td>
+                </tr>
+                <tr id="Tr3" expland="true">
+                    <td width="150" nowrap="" class="TableLabel">
+                        <span class="TableContent  " title="本周主要工作安排">本周主要工作安排</span>
+                    </td>
+                    <td colspan="3" class="TableData Width90">
+
+                        @Html.TextArea("ContentNext", Model.ContentNext, new { @class = "InputField Width90", @rows = 5 })
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="table-wrapper">
+            <table width="100%" cellspacing="0" border="0" align="center" class="App_TableBlock" id="Table5">
+                <tbody>
+                    <tr>
+                        <td class="TableHeader" colspan="4">
+                            记录信息
+                        </td>
+                    </tr>
+                    <tr id="Tr14" style="display: table-row;">
+                        <td width="150" nowrap="" class="TableLabel">
+                            <span class="TableContent  " title="">创建人</span>
+                        </td>
+                        <td colspan="1" class="TableData Width40">
+                            @Html.Hidden("CreatorID", Model.CreatorID)
+                            @Html.TextBox("CreateBy", Model.CreateBy, new { @readonly = true, @maxlength = 100, @class = "InputField Width90 InputReadonly", @title = "创建人" })
+                        </td>
+                        <td width="150" nowrap="" class="TableLabel">
+                            <span class="TableContent  " title="">创建时间</span>
+                        </td>
+                        <td colspan="1" class="TableData Width40">
+                           
+                            @Html.TextBox("CreateDate", Model.CreateDate, new { @readonly = true, @maxlength = 100, @class = "InputField Width90 InputReadonly", @title = "创建人" })
+                            </td>
+                        </tr>
+                        <tr id="Tr15" style="display: table-row;">
+                            <td width="150" nowrap="" class="TableLabel">
+                                <span class="TableContent  " title="">最后修改人</span>
+                            </td>
+                            <td colspan="1" class="TableData Width40">
+                                @Html.Hidden("ModifierID", Model.ModifierID)
+                                @Html.TextBox("ModifiedBy", Model.ModifiedBy, new { @readonly = true, @maxlength = 100, @class = "InputField Width90 InputReadonly", @title = "创建人" })
+                            </td>
+                            <td width="150" nowrap="" class="TableLabel">
+                                <span class="TableContent  " title="">最后修改时间</span>
+                            </td>
+                            <td colspan="1" class="TableData Width40">
+                                @Html.TextBox("LastModified", Model.LastModified, new { @readonly = true, @maxlength = 100, @class = "InputField Width90 InputReadonly", @title = "创建人" })
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <table width="100%" style="margin: 5px 0">
+                <tbody>
+                    <tr align="center">
+                        <td id="tdCteat">
+                            <input type="button" id="btnSave" class="btn-blue" value="保存">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    }

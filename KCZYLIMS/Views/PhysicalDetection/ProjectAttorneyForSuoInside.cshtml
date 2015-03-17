@@ -1,0 +1,354 @@
+﻿@{
+    ViewBag.Title = "ProjectAttorneyForSuoInside";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+@model KCZYLIMS.Models.kczy_ProjectAttorneyMD
+<script src="@Url.Content("~/Scripts/xPlugin/jquery.spreadtable.js")" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#approvelTable").wyGrid({ PageSize: 5, allowDisabledPageSize: true, allowSelected: false });
+        InitButtonInfo('../PhysicalDetectionAPI/CreateProjectAttorneyInside', '../ProcessMineralogyAPI/UpdateProjectAttorney');
+        $("#txtRecipients").click(function () {
+            openDialogWindow("../Selector/UserSelector?ReturnCtrl=hfValue&CallBack=RecipientsResponsorSetter()&MultiSelect=false&Type=1", "950", "600", "false");
+        });
+        $("#Text9").click(function () {
+            openDialogWindow("../InstrumentManagement/AddAppointmentPage?ReturnCtrl=hfValue&CallBack=AppointResponsorSetter()&ItemID=0&ProjectAttorneyID=" + "@Model.MyID", "950", "600", "false");
+        });
+        $("#btnEdit").click(function () { $("#spread").OnSave(); });
+
+        $("#btnExport").click(function () {
+
+            $.ajax({
+                type: 'post',
+                url: '/ExportExcel/ProjectAttorney', //路径为添加方法
+                data: 'itemID=' + getUrlQueryString('ItemID'), //参数的个数和名字要和方法的名字保持一致
+                success: function (json) //返回的是Json类型的
+                {
+                    if (json.Result == true) {
+                        $('#ifExportpage').attr('src', '../Portal/ExportExcelPage' + '?path=' + json.Path);
+                    }
+                }
+            });
+        });
+        //动态增行
+        var setting = $("#spread").spreadtable({ "ItemID": getUrlQueryString('ItemID'), "url": "../PhysicalDetectionAPI/ExperimentAmountRecord" });
+        //alert(setting);
+        $("#btnSave").unbind("click");
+
+        $("#btnSave").click(function () {
+            if (checkForm()) {
+                $.ajax({
+                    type: 'post',
+                    url: '../PhysicalDetectionAPI/CreateProjectAttorneyInside', //路径为添加方法
+                    data: $('#MainFrm').serialize(), //参数的个数和名字要和方法的名字保持一致
+                    success: function (json) //返回的是Json类型的
+                    {
+                        if (json.Result == true) {
+                            setting.ItemID = json.Data.ItemID;
+                            $("#spread").OnSave();
+                            parent.parent.layer.msg('保存成功', 2, 1);
+                            parent.window.location.href = window.location.origin + parent.window.location.pathname + "?ItemID=" + json.Data.OrigID;
+                        }
+                    }
+                });
+                
+            }
+        });
+        //$("#approve_div,#appInfo").hide();
+        //$("#btnEdit").click(function () { alert('123'); });
+        $("#approvelTable").hide();
+        $("#appInfo").hide();
+    });
+    function experimentSum() {
+        var sum = parseInt("0");
+        $("input[prop_name='ExperimentAmount']").each(function () {
+            if ($(this).val() != "") {
+                sum = sum + parseInt($(this).val());
+            }
+        });
+        $("#txtAmount").val(sum);
+    }
+</script>
+<script id="submit_Lists" type="text/x-jsrender">
+    <input type="checkbox" value="{{>UserID}}" checked="checked"/>
+    <label>{{>FullName}}</label>
+
+</script>
+<script id="approve_Lists" type="text/x-jsrender">
+    <tr>
+        <td>{{>UserName}}</td>
+        <td>{{>ResultText}}</td>
+        <td>{{>MyNote}}</td>
+        <td>{{>SubmitDateStr}}</td>
+        <td></td>
+    </tr>
+</script>
+<form id="MainFrm">
+    <div id="tabs" style="margin: auto;">
+        @*<%--<div id="navReg">
+                <div class="title">
+                    分析测试委托单(所内)
+                </div>
+            </div>--%>*@
+        <div id="page1">
+            <div class="table-wrapper">
+                <input type="hidden" id="RelatedID" name="RelatedID" value="@Model.RelatedID" />
+                <table id="page1_block1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                       width="100%">
+                    <tbody>
+                        <tr style="display: none;">
+                            <td colspan="4" class="TableHeader">
+                                基本信息
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent  Red">项目名称</span>
+                            </td>
+                            <td class="TableData Width40">
+                                <input id="txtMyID" class="display_none" type="text" value="@Model.MyID" name="MyID" />
+                                <input class="display_none" type="text" value="@Model.ItemID" name="ItemID" />
+                                <input class="display_none" type="text" value="@Model.OrigID" name="OrigID" />
+                                <input id="txtMyType" class="display_none" type="text" name="MyType" value="2" />
+                                <input id="txtSpecialty" class="display_none" type="text" name="Specialty" value="3" />
+                                <input id="txtPrincipalID" name="PrincipalID" class="display_none" value="@Model.PrincipalID" />
+                                <input id="txtPrincipal" type="text" name="Principal" class="display_none" value="@Model.Principal" />
+                                <input id="txtMyName" class="InputField Width80" type="text" value="@Model.MyName" name="MyName" require="must" />
+                            </td>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent  Red">项目编号</span>
+                            </td>
+                            <td class="TableData Width40">
+                                <input id="txtMyCode" class="InputField Width80" type="text" value="@Model.MyCode" name="MyCode" require="must" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="">收样人</span>
+                            </td>
+                            <td class="TableData Width40">
+                                <input id="txtRecipientID" name="RecipientID" class="display_none" value="@Model.RecipientID"></input>
+                                <input id="txtRecipients" type="text" value="@Model.Recipients" name="Recipients" class="InputField Width80 refField"
+                                       onfocus="this.className='InputFocus Width80 refField'" onblur="this.className='InputField Width80 refField'"
+                                       readonly="readOnly" />
+                                <a href="javascript:void(0)" id="a2" class="ref-delete-handle inline-block"></a>
+                            </td>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="">预约时间</span>
+                            </td>
+                            <td class="TableData Width40">
+                                <input id="Text9" class="InputField Width80" readonly="true" type="text" value="" />
+                                <a class="ref-delete-handle inline-block" id="a2" href="javascript:$(this).siblings().val('')"></a>
+                            </td>
+                        </tr>
+                        <tr id="page1_block1_row1">
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="截止日期" class="TableContent  ">样品名称</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input name="SampleName" id="txtSampleName" class="InputField Width80 "
+                                       onfocus="this.className='InputFocus Width80 '" onblur="this.className='InputField Width80 '"
+                                       maxlength="100" title="" datatype="text" require="none" value="@Model.SampleName">
+                                </input>
+                            </td>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="截止日期" class="TableContent  ">送样日期</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input id="txtSampleDate" class="InputField Width80 dateField"
+                                       onfocus="this.className='InputFocus Width80 dateField'" onblur="this.className='InputField Width80 dateField'"
+                                       onclick="WdatePicker({dateFmt:'yyyy-MM-dd',maxDate:'%y-%M-%d'});" title="送样日期"
+                                       readonly="readonly" name="SampleDate" value="@Model.SampleDate.ToString("yyyy-MM-dd")">
+                                </input>
+                            </td>
+                           
+                           
+                        </tr>
+                        <tr id="page1_block1_row2">
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent">送样人</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input id="txtSamplerID" name="SamplerID" class="display_none" value="@Model.SamplerID"></input>
+                                <input name="Sampler" id="txtSampler" class="InputField Width80"
+                                       onfocus="this.className='InputFocus Width80'" onblur="this.className='InputField Width80'"
+                                       readonly="readOnly" value="@Model.Sampler"></input>
+                            </td>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent">电话</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input name="Telephone" id="txtTelephone" class="InputField Width80 " value="@Model.Telephone"
+                                       onfocus="this.className='InputFocus Width80 '" onblur="this.className='InputField Width80 '"
+                                       maxlength="100" title="" datatype="phone" >
+                                </input>
+                            </td>
+                            
+                        </tr>
+                        <tr id="Tr2">
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="电子邮箱" class="TableContent  ">电子邮箱</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input id="txtEmail" class="InputField Width80" onfocus="this.className='InputFocus Width80'"
+                                       onblur="this.className='InputField Width80'" name="Email" value="@Model.Email" datatype="email">
+                                </input>
+                            </td>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="样品数量" class="TableContent  ">样品数量</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input id="txtSampleNum" class="InputField Width80" type="text" name="SampleNum" value="@Model.SampleNum" datatype="int" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="">样品材质</span>
+                            </td>
+                            <td class="TableData Width40">
+                                <input id="txtSampleTexture" class="InputField Width80" name="SampleTexture" value="@Model.SampleTexture" />
+                            </td>
+                        </tr>
+                        <tr id="Tr5">
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent">分析内容</span>
+                            </td>
+                            <td class="TableData Width40" colspan="3">
+                                <textarea textmode="MultiLine" rows="5" name="remark" id="TextBox6"
+                                          class="InputField Width90 " onfocus="this.className='InputFocus Width90 '" onblur="this.className='InputField Width90 '"
+                                          title="" datatype="textarea" field_control="" field_control_ze="" require="none">@Model.WorkRequirement</textarea>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <table id="spread" style="width:100%">
+                    <tr>
+                        <th class="TableLabel" style="background-color: transparent;"></th>
+                        <th class="TableLabelNoWidth ">测试项目</th>
+                        <th class="TableLabelNoWidth">项目费用</th>
+                        <th class="TableLabelNoWidth"></th>
+                    </tr>
+                    <tr class="row_tpl">
+                        <td>
+                            <a class="x-spread-add">
+                                <span class="k-icon k-i-close link-blue">新增</span>
+                            </a>
+                            <a class="x-spread-del">
+                                <span class="k-icon k-i-close link-blue">删除</span>
+                            </a>
+                        </td>
+                        <td>
+                            <input type="text" class="k-textbox Width90" value="" prop_name="ExperimentName" />
+                            <input type="text" class="k-textbox Width90" prop_name="MyID" style="display:none" value="0" />
+                        </td>
+                        <td>
+                            <input type="text" class="k-textbox Width90" value="" prop_name="ExperimentAmount" onblur="experimentSum()" datatype="money" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">费用总额</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtAmount" class="InputField Width90" type="text" name="Amount" value="@Model.Amount" style="font-size:10pt;" datatype="money" />
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table id="Table5" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="TableHeader">
+                            记录信息
+                        </td>
+                    </tr>
+                    <tr id="Tr14">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">创建人</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtCreateBy" title="创建人" name="CreateBy" class="InputField Width90 InputReadonly"
+                                   maxlength="100" datatype="text" readonly="True"></input>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">创建时间</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtCreatDate" title="创建时间" name="CreateDate" class="InputField Width80 InputReadonly"
+                                   maxlength="100" datatype="datetime" readonly="True"></input>
+                        </td>
+                    </tr>
+                    <tr id="Tr15">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">最后修改人</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtModifiedBy" title="最后修改人" name="ModifiedBy"
+                                   class="InputField Width90 InputReadonly" maxlength="100" datatype="datetime"
+                                   readonly="True"></input>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">最后修改时间</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtLastModified" title="最后修改时间" name="LastModified"
+                                   class="InputField Width80 InputReadonly" maxlength="100" datatype="datetime"
+                                   readonly="True"></input>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <iframe id="ifExportpage" style="display:none"></iframe>
+        <div>
+            <table id="approvelTable" class="App_TableBlock" style="width: 100%; border-collapse: collapse; table-layout: fixed;margin-top: 20px;">
+                <tbody>
+                    <tr>
+                        <td colspan="5" class="TableHeader">
+                            审批历史
+                        </td>
+                    </tr>
+                    <tr id="product_tbl_header">
+                        <th style="width:100px">提交人</th>
+                        <th style=" width:100px"></th>
+                        <th style="width:200px"></th>
+                        <th style="width:200px"></th>
+                        <th style="width:2000px"></th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <center>
+            <div id="appInfo" style="display: none; margin-top: 30px;"><span style="margin-left: 10px;">意见:</span><input id="ApproveMyNote" class="" type="text" style="width: 300px;margin-top:30px;"></input><span id="approveUsers" style="margin-left: 30px;">下一级审批人：</span></div>
+
+            <table style="margin: 5px 0">
+                <tbody>
+                    <tr align="center">
+                        <td id="tdCteat">
+                            <input value="保存" class="btn-blue" type="button" id="btnSave" />
+                        </td>
+                        <td id="tdEdit" style="display: none;">
+                            <input value="保存" class="btn-blue" type="button" id="btnEdit" />
+                            <input value="完成" class="btn-blue" type="button" id="submit" />
+                            <input value="导出Excel" class="btn-blue" type="button" id="btnExport" />
+                        </td>
+                        <td id="tdApprove" style="display: none;">
+                            <input value="同意" class="btn-blue" type="button" id="btnApprove" />
+                            <input value="驳回" class="btn-blue" type="button" id="btnReject" />
+
+                        </td>
+@*                        <td id="tdPrint">
+                            <input value="打印" class="btn-blue" onclick="window.close();" type="button" />
+                        </td>*@
+                    </tr>
+                </tbody>
+            </table>
+        </center>
+    </form>

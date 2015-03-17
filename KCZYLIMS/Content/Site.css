@@ -1,0 +1,602 @@
+﻿html {
+    font-size:14px;
+    font-family:"宋体",Arial;
+    line-height:14px;
+    color:#333333;
+    margin:0 0 0 0;
+}
+
+body {  
+    background-color: #eeeeee;
+    margin:0px 0px 0px 0px;
+}
+ 
+.header-menu {
+    margin-top: 0px;
+}
+
+    .header-menu li {
+        font-weight: bolder;
+    }
+
+#footer-layout {
+    margin:0px auto;
+}
+
+
+/* Styles for basic forms 
+    要使用x style 的表格，请申明此class
+-----------------------------------------------------------*/
+textarea, input {
+    background-color: #fafafa;
+}
+
+.App_TableBlock
+{
+    border: 1px solid #D6D6D6;
+    border-collapse: collapse;
+    line-height: 20px;
+}
+
+.App_TableBlock td
+{
+    border: 1px solid #F3F3F3;
+    height: auto;
+    line-height: 26px;
+    padding-top: 0;
+}
+
+/**表格通过colspan的一列做分组大title**/
+.App_TableBlock .TableHeader td, .App_TableBlock td.TableHeader
+{
+   background: url("images/header_bg.jpg") repeat-x scroll center center rgba(0, 0, 0, 0);
+    color: #393939;
+    font-size: 14px;
+    font-weight: bold;
+    height: 28px !important;
+    line-height: 23px;
+    padding: 0 0 0 10px;
+    vertical-align: middle;
+}
+.App_TableBlock .TableHeader td.TableCorner
+{
+    background: none repeat scroll 0 0 #99C729;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+.App_TableBlock .TableLine1 td, .App_TableBlock td.TableLine1
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border-bottom: 1px solid #CCCCCC;
+    border-right: 1px solid #CCCCCC;
+}
+.App_TableBlock .TableLine2 td, .App_TableBlock td.TableLine2
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border-bottom: 1px solid #CCCCCC;
+    border-right: 1px solid #CCCCCC;
+}
+.App_TableBlock .TableData td, .App_TableBlock td.TableData
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+}
+.App_TableBlock .TableContent td, .App_TableBlock td.TableContent
+{
+}
+.App_TableBlock .TableContent span, .App_TableBlock span.TableContent
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border-radius: 3px 3px 3px 3px;
+    display: inline-block;
+    height: 20px;
+    padding-left: 15px;
+}
+.App_TableBlock .TableFooter td, .App_TableBlock .TableControl td, .App_TableBlock td.TableFooter, .App_TableBlock td.TableControl
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #CCCCCC;
+}
+.App_TableBlock .TableRed td, .App_TableBlock td.TableRed
+{
+    background: none repeat scroll 0 0 #EDF6DB;
+}
+.App_TableBlock .TableLeft td, .App_TableBlock td.TableLeft
+{
+    background: none repeat scroll 0 0 #C4DE83;
+    border-bottom: 1px solid #A7BD74;
+}
+.Content
+{
+    line-height: normal;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+.App_TableBlock .TableRowHover td, .App_TableBlock td.TableRowHover
+{
+    background: none repeat scroll 0 0 #EDF6DB;
+}
+.App_TableBlock .TableRowActive td, .App_TableBlock td.TableRowActive
+{
+    background: none repeat scroll 0 0 #E5E5E5;
+}
+.TableLabel
+{
+    background: none repeat scroll 0 0 #FAFAFA;
+    padding-left: 10px !important;
+}
+.App_TableBlock .TableData
+{
+    color: #555555;
+    padding-left: 10px !important;
+}
+.App_TableBlock span.TableContent
+{
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0);
+    padding: 0;
+}
+.App_TableBlock td
+{
+    border: 1px solid #F3F3F3;
+    height: auto;
+    line-height: 26px;
+    padding-top: 0;
+}
+.no-left-border
+{
+    border-left: 0 none !important;
+}
+.no-top-border
+{
+    border-top: 0 none !important;
+}
+.no-right-border
+{
+    border-right: 0 none !important;
+}
+.no-bottom-border
+{
+    border-bottom: 0 none !important;
+}
+.App_TableBlock input.InputField
+{
+    border: 1px solid #B8BBCC;
+    height: 20px;
+    line-height: 18px;
+    padding-left: 3px;
+}
+.App_TableBlock input.InputFocus
+{
+    background-color: #FFFFDF;
+    border: 1px solid #808080;
+    height: 20px;
+    line-height: 18px;
+    padding-left: 3px;
+}
+.App_TableBlock input.refField, input.refField, input.userField, input.deptField, .App_TableBlock input.userField, .App_TableBlock input.deptField
+{
+    background-image: url("images/input_bg_add.png");
+    background-position: right center;
+    background-repeat: no-repeat;
+}
+.App_TableBlock input.dateField
+{
+    background-image: url("images/input_bg_cal.png");
+    background-position: right center;
+    background-repeat: no-repeat;
+}
+.App_TableBlock textarea.InputField
+{
+    border: 1px solid #B8BBCC;
+    padding-left: 3px;
+    padding-top: 3px;
+}
+.App_TableBlock textarea.InputFocus
+{
+    background-color: #FFFFDF;
+    border: 1px solid #808080;
+    padding-left: 3px;
+    padding-top: 3px;
+}
+.ref-delete-handle{
+	background: url('images/remove.png') no-repeat 50% 50%;
+	width:14px;
+	height:14px;
+	vertical-align: middle;
+	margin: 0 5px;
+	
+}
+.inline-block{
+	display: inline-block;
+	*display: inline;
+	*zoom: 1;
+	vertical-align: middle;
+}
+.TableLabel {
+    width:150px;
+    background: none repeat scroll 0 0 #FAFAFA;
+}
+
+.TableLabelNoWidth {
+    background: none repeat scroll 0 0 #FAFAFA;
+}
+
+
+.TableData
+{
+    color: #555555;
+    padding-left: 10px !important;
+}
+.tablelayout {
+    table-layout: fixed;
+}
+
+.Width40 {
+    width:40%
+}
+.Width50 {
+    width:50%
+}
+.Width60 {
+    width:60%
+}
+.Width70 {
+    width:70%
+}
+.Width80 {
+    width:80%
+}
+.Width90 {
+    width:90%
+}
+.Red
+{
+    color: red;
+}
+.Blue
+{
+    color: blue;
+}
+input[readonly], input[readonly]:hover {
+    background-color: #EBEBEB;
+}  
+.display_none
+{
+    display: none;
+}
+/***************************wyCRM部分**********************************/
+a {
+    text-decoration: none;
+    outline:none;
+}
+a:link{color: #0466cb; text-decoration: none;}
+a.ActionA, a.ActionA:visited, a.ActionA:link, a.ActionA:hover
+{
+    color: #4A8DC4;
+    display: inline-block;
+    font-family: 微软雅黑,宋体,sans-serif;
+    height: 12px;
+    line-height: 12px;
+    padding-left: 15px;
+    text-decoration: none;
+}
+a.ActionA:hover
+{
+    color: #085D99;
+}
+a.RecordDetail
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 0 rgba(0, 0, 0, 0);
+}
+a.RecordDetail:hover
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -12px rgba(0, 0, 0, 0);
+}
+a.RecordNew
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -24px rgba(0, 0, 0, 0);
+}
+a.RecordNew:hover
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -36px rgba(0, 0, 0, 0);
+}
+a.RecordEdit
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -48px rgba(0, 0, 0, 0);
+}
+a.RecordEdit:hover
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -60px rgba(0, 0, 0, 0);
+}
+a.RecordImport
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -72px rgba(0, 0, 0, 0);
+}
+a.RecordImport:hover
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -84px rgba(0, 0, 0, 0);
+}
+a.RecordExport
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -96px rgba(0, 0, 0, 0);
+}
+a.RecordExport:hover
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -108px rgba(0, 0, 0, 0);
+}
+a.RecordShare
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -120px rgba(0, 0, 0, 0);
+}
+a.RecordShare:hover
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -132px rgba(0, 0, 0, 0);
+}
+a.RecordHistory
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -144px rgba(0, 0, 0, 0);
+}
+a.RecordHistory:hover
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -156px rgba(0, 0, 0, 0);
+}
+a.RecordDel
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -168px rgba(0, 0, 0, 0);
+}
+a.RecordDel:hover
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -180px rgba(0, 0, 0, 0);
+}
+a.EmailSend
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -192px rgba(0, 0, 0, 0);
+}
+a.EmailSend:hover
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -204px rgba(0, 0, 0, 0);
+}
+a.RecordMultDel
+{
+    background: url("images/crm_actions.png") no-repeat scroll 0 -216px rgba(0, 0, 0, 0);
+}
+.CRM_TableList
+{
+    border: 1px solid #DDDDDD;
+    border-collapse: collapse;
+    line-height: 25px;
+}
+.CRM_TableList td
+{
+    border-bottom: 1px solid #DCDCDC !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.CRM_TableList .TableHeader td, .CRM_TableList td.TableHeader
+{
+    background: none repeat scroll 0 0 #F8F8F8;
+    border-bottom: 1px solid #DDDDDD;
+    color: #797979;
+    line-height: 25px;
+    padding: 0;
+    text-align: center;
+    text-overflow: ellipsis;
+}
+.CRM_TableList .TableHeader a:link, .CRM_TableList .TableHeader a:hover, .CRM_TableList .TableHeader a:active, .CRM_TableList .TableHeader a:visited
+{
+    color: #797979;
+}
+.CRM_TableList .TableHeader img
+{
+    vertical-align: middle !important;
+}
+.CRM_TableList .resizeDivClass span, .CRM_TableList span.resizeDivClass
+{    
+    float: right;
+    width: 2px;
+}
+
+.CRM_TableList th a{
+    text-decoration:none;
+}
+    .CRM_TableList th a:hover {
+        text-decoration:underline;    
+    }
+
+.CRM_TableList .TableLine1 td, .CRM_TableList td.TableLine1
+{
+    background: none repeat scroll 0 0 #F8F8F8;
+    border-top: 1px solid #DCDCDC;
+}
+.CRM_TableList .TableLine1 .checkTd td, .CRM_TableList .TableLine1 td.checkTd
+{
+}
+.CRM_TableList .TableLine1 .numTd td, .CRM_TableList .TableLine1 td.numTd
+{
+    background: none repeat scroll 0 0 #E4EAF7;
+}
+.CRM_TableList .TableLine2 td, .CRM_TableList td.TableLine2
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+    border-top: 1px solid #DCDCDC;
+}
+.CRM_TableList .TableLine2 .checkTd td, .CRM_TableList .TableLine2 td.checkTd
+{
+}
+.CRM_TableList .TableLine2 .numTd td, .CRM_TableList .TableLine2 td.numTd
+{
+    background: none repeat scroll 0 0 #EAF0FE;
+}
+.CRM_TableList .TableLight td, .CRM_TableList td.TableLight
+{
+    background: none repeat scroll 0 0 #FEFEDA;
+    border-top: 1px solid #DCDCDC;
+    transition: all 0.5s ease-in 0s;
+}
+.CRM_TableList .TableLight .checkTd td, .CRM_TableList .TableLight td.checkTd
+{
+}
+.CRM_TableList .TableLight .numTd td, .CRM_TableList .TableLight td.numTd
+{
+    background: none repeat scroll 0 0 #EEF0DA;
+}
+.CRM_TableList .TableSelect td, .CRM_TableList td.TableSelect
+{
+    background: none repeat scroll 0 0 #FDFEBD;
+    border-top: 1px solid #DCDCDC;
+}
+.CRM_TableList .TableSelect .checkTd td, .CRM_TableList .TableSelect td.checkTd
+{
+}
+.CRM_TableList .TableSelect .numTd td, .CRM_TableList .TableSelect td.numTd
+{
+    background: none repeat scroll 0 0 #E9EDA1;
+}
+.CRM_TableList .TableData td, .CRM_TableList td.TableData
+{
+    background: none repeat scroll 0 0 #FFFFFF;
+}
+.CRM_TableList .TableContent td, .CRM_TableList td.TableContent
+{
+    border-top: 1px solid #DCDCDC;
+}
+.CRM_TableList .TableFooter td, .CRM_TableList .TableControl td, .CRM_TableList td.TableFooter, .CRM_TableList td.TableControl
+{
+    background: url("footer_bg.png") repeat scroll left bottom rgba(0, 0, 0, 0);
+    border-top: 1px solid #DCDCDC;
+}
+.CRM_TableList .TableRed td, .CRM_TableList td.TableRed
+{
+    background: none repeat scroll 0 0 #FFEBEB;
+}
+.CRM_TableList .TextColor1 td, .CRM_TableList td.TextColor1
+{
+    color: #FF6600;
+}
+.CRM_TableList .TextColor2 td, .CRM_TableList td.TextColor2
+{
+    color: #FF0000;
+}
+.InputField input, input.InputField, .CRM_TableList .InputField input, .CRM_TableList input.InputField
+{
+    border: 1px solid #CCCCCC;
+    height: 20px;
+}
+.InputFieldFocus input, input.InputFieldFocus, .CRM_TableList .InputFieldFocus input, .CRM_TableList input.InputFieldFocus
+{
+    background-color: #FFFFDF;
+    border: 1px solid #808080;
+    height: 20px;
+}
+.CRM_TableList .CheckField input, .CRM_TableList input.CheckField
+{
+    border: 0 none;
+}
+.CRM_TableList .InputField textarea, .CRM_TableList textarea.InputField
+{
+    border: 1px solid #B8BBCC;
+}
+.CRM_TableList .InputFieldFocus textarea, .CRM_TableList textarea.InputFieldFocus
+{
+    background-color: #FFFFDF;
+    border: 1px solid #808080;
+}
+.page_bar
+{
+    font-family: "微软雅黑" , "宋体" , "幼圆";
+    font-size: 12px;
+    margin: 1pt;
+}
+.page_bar_bg
+{
+    text-align: right;
+    vertical-align: middle;
+}
+.page_bar_bg img, .page_bar_bg input
+{
+    cursor: pointer;
+    vertical-align: middle;
+}
+/* Styles for validation helpers
+-----------------------------------------------------------*/
+.field-validation-error {
+    color: #f00;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+.input-validation-error {
+    border: 1px solid #f00;
+    background-color: #fee;
+}
+
+.validation-summary-errors {
+    font-weight: bold;
+    color: #f00;
+}
+
+.validation-summary-valid {
+    display: none;
+}
+#navReg {
+	/*width:100%;*/
+	height:32px;
+	border-bottom:1px #d7d8d9 solid;
+	margin:0 auto;
+	text-align:left;
+	padding-left:15px;
+}
+#navReg img {
+	height:24px !important;
+	height:24px;
+	width:24px !important;
+	width:24px;
+	margin-top:0px !important;
+	margin-top:20px;
+	position:relative;
+	top:2px;
+	left:10px;
+	display:none;   
+}
+#navReg .title {
+	margin-top: 21px;
+	position: relative;
+	top: -5px !important;
+	line-height: 20px;
+	color: #393939;
+	font-size: 20px;
+	font-weight: bold;
+	text-shadow: 0 0 5px #e6e6e6;
+    left: 0px;
+}
+/*-------流程导航样式------*/
+.Normal_Flow {
+    width: 25%;
+    display: inline-table;
+    text-align: center;
+}
+.Completed_Flow {
+    cursor: pointer;    
+    color: white;
+     background-size: 100% 70%;
+    background-position: 40% center;
+    background-repeat: no-repeat;
+    background-image: url('../Content/Images/flow/1.png');
+}
+.Current_Flow {
+    cursor: pointer;
+    color: white;
+    background-size: 100% 70%; 
+    background-position: 40% center;
+    background-repeat: no-repeat;
+    background-image: url('../Content/Images/flow/2-1.png');
+}
+.UnDone_Flow {    
+    color: white;
+    background-size: 100% 70%;
+    background-position: 40% center;
+    background-repeat: no-repeat;
+    background-image: url('../Content/Images/flow/3.png');
+}

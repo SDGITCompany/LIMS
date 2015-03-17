@@ -1,0 +1,264 @@
+﻿@{
+    ViewBag.Title = "AnalysisReport";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+@model KCZYLIMS.Models.kczy_AnalysisReportMD
+<script type="text/javascript">
+    $(function () {
+        $("#approvelTable").wyGrid({ PageSize: 5, allowDisabledPageSize: true, allowSelected: false });
+        InitButtonInfo('', '../ChemicalPhaseAnalysisAPI/UpdateAnalysisReport');
+        //下载附件
+        $("body").on("click", ".span-attachment", function (event) {
+            var ahref = $(this).find("a");
+            var attid = $(ahref).attr('attr_id');
+            var attrPath = $(ahref).attr('attr_path');
+            var attrFileName = $(ahref).attr('attr_filename');
+            $('#ifDownloadpage').attr('src', '../Portal/DownloadPage' + '?AttachID=' + attid + "&OrigPath=" + attrPath + "&FileName=" + attrFileName);
+        });
+        $("#btnEdit").click(function () {
+            SaveAttachment();
+        });
+        $("#submit").unbind("click");
+        //附件的控件
+        var itemid = getUrlQueryString('ItemID');
+        $('#lbtnBaseUpload').attachmentInit({ RelatedID: itemid, RelatedType: 2, DivId: 'divBaseUpload' });
+        var type = getUrlQueryString('Type');
+        if (type == 'Inside') {
+            $("#submit").val("完成");
+            $("#appInfo").hide(); 
+            $("#approvelTable").hide();
+            
+            $("#submit").click(function () {
+                
+                if (checkForm()) {
+                    SaveAttachment();
+                    $.ajax({
+                        type: 'post',
+                        async: false, //同步
+                        url: '../ChemicalPhaseAnalysisAPI/UpdateAnalysisReport', //路径为添加方法
+                        data: $('#MainFrm').serialize(), //参数的个数和名字要和方法的名字保持一致
+                    });
+                }
+                var userLists = "";
+                $("input[type=checkbox]:checked").each(function () {
+                    userLists += $(this).val() + ";";
+                    $("#ApproveMyNote").val();
+                });
+                    $.ajax({
+                        type: "POST", //默认是GET
+                        url: "../CommonSvr/Submit", //调用WebService的地址和方法名称组合 ---- WsURL/方法名
+                        data: { "ItemID": getUrlQueryString('ItemID'), "Notes": $("#ApproveMyNote").val(), "NextUsers": userLists },
+                        async: false, //异步
+                        cache: false, //不加载缓存
+                        success: function (result) {
+                            //返回的result就是json格式的
+                            //var tmp = "";
+                            parent.parent.layer.msg('提交成功', 2, 6);
+                            var index = parent.window.location.href.indexOf('#');
+                            if (index == -1) {
+                                parent.window.location.href = parent.window.location.href;
+                            } else {
+                                parent.window.location.href = parent.window.location.href.substr(0, index);
+                            }
+                        },
+                        error: function () {
+                            parent.parent.layer.msg("提交失败", 2, 8);
+                        }
+                    });
+
+            });
+        }else if (type == 'Outside') {
+            $("#submit").click(function () {
+
+                if (checkForm()) {
+                    SaveAttachment();
+                    $.ajax({
+                        type: 'post',
+                        async: false, //同步
+                        url: '../ChemicalPhaseAnalysisAPI/UpdateAnalysisReport', //路径为添加方法
+                        data: $('#MainFrm').serialize(), //参数的个数和名字要和方法的名字保持一致
+                    });
+                }
+                var userLists = "";
+                $("input[type=checkbox]:checked").each(function () {
+                    userLists += $(this).val() + ";";
+                    $("#ApproveMyNote").val();
+                });
+                if (userLists != "") {
+                $.ajax({
+                    type: "POST", //默认是GET
+                    url: "../CommonSvr/Submit", //调用WebService的地址和方法名称组合 ---- WsURL/方法名
+                    data: { "ItemID": getUrlQueryString('ItemID'), "Notes": $("#ApproveMyNote").val(), "NextUsers": userLists },
+                    async: false, //异步
+                    cache: false, //不加载缓存
+                    success: function (result) {
+                        //返回的result就是json格式的
+                        //var tmp = "";
+                        parent.parent.layer.msg('提交成功', 2, 6);
+                        var index = parent.window.location.href.indexOf('#');
+                        if (index == -1) {
+                            parent.window.location.href = parent.window.location.href;
+                        } else {
+                            parent.window.location.href = parent.window.location.href.substr(0, index);
+                        }
+                    },
+                    error: function () {
+                        parent.parent.layer.msg("提交失败", 2, 8);
+                    }
+                });
+                } else {
+                    parent.parent.layer.msg('请您选择下一步审批人！', 2, 15);
+                }
+            });
+            } 
+    });
+    //保存附件
+    function SaveAttachment() {
+        //保存单个的附件
+        $('#lbtnBaseUpload').attachmentSave({ RelatedID: getUrlQueryString('ItemID'), RelatedType: 2, DivId: 'divBaseUpload' });
+    }//end o func
+</script>
+<script id="submit_Lists" type="text/x-jsrender">
+    <input type="checkbox" value="{{>UserID}}" />
+    <label>{{>FullName}}</label>
+
+</script>
+<script id="approve_Lists" type="text/x-jsrender">
+    <tr>
+        <td>{{>UserName}}</td>
+        <td>{{>ResultText}}</td>
+        <td>{{>MyNote}}</td>
+        <td>{{>SubmitDateStr}}</td>
+        <td></td>
+    </tr>
+</script>
+<form id="MainFrm">
+    <div>
+        <input type="hidden" id="hfLast"/>
+        <div id="page1">
+            <div class="table-wrapper">
+                <table id="page1_block1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                       width="100%">
+                    <tbody>
+                        <tr style="display: none;">
+                            <td colspan="4" class="TableHeader">
+                                基本信息
+                            </td>
+                        </tr>
+                        <tr id="page1_block1_row7">
+                            <td width="150" nowrap="" class="TableLabel">
+                                <input type="button" value="上传附件" class="btn-red" id="lbtnBaseUpload">
+                            </td>
+                            <td colspan="7" class="TableData Width90">
+                                <div style="margin: 0 0 5px 0px" id="divBaseUpload">
+
+                                </div>
+                            </td>
+                        </tr>
+                        <tr id="Tr2">
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="">备注</span>
+                            </td>
+                            <td class="TableData Width90" colspan="7">
+                                <input id="txtMyID" class="display_none" type="text" value="@Model.MyID" name="MyID" />
+                                <input class="display_none" type="text" value="@Model.ItemID" name="ItemID" />
+                                <input class="display_none" type="text" value="@Model.OrigID" name="OrigID" />
+                                <input id="txtSpecialty" class="display_none" type="text" name="Specialty" value="1" />
+                                <input id="txtMyName" class="display_none" type="text" value="@Model.MyName" name="MyName" />
+                                <input id="txtMyCode" class="display_none" type="text" value="@Model.MyCode" name="MyCode" />
+                                <textarea rows="5" class="InputField Width90 " id="txtRemark" name="Remark">@Model.Remark</textarea>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-wrapper">
+                <table id="Table5" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                       width="100%">
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="TableHeader">
+                                记录信息
+                            </td>
+                        </tr>
+                        <tr id="Tr14">
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent  ">创建人</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                            <input class="display_none" value="@Model.CreatorID" name="CreatorID"></input>
+                            <input id="txtCreateBy" title="创建人" class="InputField Width90 InputReadonly"
+                                   maxlength="100" datatype="text" readonly="True" value="@Model.CreateBy" name="CreateBy"></input>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent  ">创建时间</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input id="txtCreatDate" title="创建时间" class="InputField Width80 InputReadonly"
+                                       maxlength="100" datatype="datetime" readonly="True" value="@Model.CreateDate" name="CreateDate"></input>
+                            </td>
+                        </tr>
+                        <tr id="Tr15">
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent  ">最后修改人</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input class="display_none" value="@Model.ModifierID"></input>
+                                <input id="txtModifiedBy" title="最后修改人"
+                                       class="InputField Width90 InputReadonly" maxlength="100" datatype="datetime"
+                                       readonly="True" value="@Model.ModifiedBy"></input>
+                            </td>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent  ">最后修改时间</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input id="txtLastModified" title="最后修改时间"
+                                       class="InputField Width80 InputReadonly" maxlength="100" datatype="datetime"
+                                       readonly="True" value="@Model.LastModified"></input>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div>
+            <table id="approvelTable" class="App_TableBlock" style="width: 100%; border-collapse: collapse; table-layout: fixed;margin-top: 20px;">
+                <tbody>
+                    <tr>
+                        <td colspan="5" class="TableHeader">
+                            审批历史
+                        </td>
+                    </tr>
+                    <tr id="product_tbl_header">
+                        <th style="width:100px">提交人</th>
+                        <th style=" width:100px"></th>
+                        <th style="width:200px"></th>
+                        <th style="width:200px"></th>
+                        <th style="width:2000px"></th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <iframe id="ifDownloadpage" style="display:none;"></iframe>
+        <center>
+            <div id="appInfo" style="display: none;margin-top: 40px;"><span style="margin-left: 10px;">意见:</span><input id="ApproveMyNote" class="" type="text" style="width: 300px;"></input><span id="approveUsers" style="margin-left: 30px;">下一级审批人：</span></div>
+        </center>
+        <table style="margin: 5px 0" width="100%">
+            <tbody>
+                <tr align="center">
+                    <td id="tdCteat">
+                        <input value="保存" class="btn-blue" type="button" id="btnSave" />
+                    </td>
+                    <td id="tdEdit" style="display: none;">
+                        <input value="保存" class="btn-blue" type="button" id="btnEdit" />
+                        <input value="提交" class="btn-blue" type="button" id="submit" />
+                    </td>
+                    <td id="tdApprove" style="display: none;">
+                        <input value="同意" class="btn-blue" type="button" id="btnApprove" />
+                        <input value="驳回" class="btn-blue" type="button" id="btnReject" />
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</form>

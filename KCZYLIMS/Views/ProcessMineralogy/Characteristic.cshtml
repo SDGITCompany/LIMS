@@ -1,0 +1,389 @@
+﻿@{
+    ViewBag.Title = "Characteristic";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+@model KCZYLIMS.Models.kczy_ExperimentStatusBaseInfoMD
+<script src="@Url.Content("~/Scripts/xPlugin/jquery.spreadtable.js")" type="text/javascript"></script>
+<script type="text/javascript">
+
+
+
+    $(function () {
+        //动态增行，动态增行搞不定这个，因为数据没保存时，id也没有，附件难以保存
+        //另外一个就是渲染的问题，通用化设计得没那么强
+        //$("#spread").spreadtable({ "ItemID": getUrlQueryString('ItemID'), "url": "/ProcessMineralogyAPI/CharacteristicRecord" });
+
+        itemid = getUrlQueryString('ItemID');
+        InitView();
+        
+        if ("@Model.IsSubmit" == "True") {
+            $("#tdEdit").hide();
+            $("#tdSubmit").show();
+        }
+        var status = getUrlQueryString('Status');
+        if (status == "CompletedStatus") {
+            $("#tdEdit").hide();
+            $("#tdSubmit").hide();
+            $("input").attr("disabled", "disabled");
+        }
+        $("#btnMinEdit").click(function () {
+            //这里是单附件上传的保存
+            SaveAttachment();
+            SaveSpread();
+            $.ajax({
+                type: 'post',
+                url: '../ProcessMineralogyAPI/UpdateExperimentStatusBaseInfo', //路径为添加方法
+                data: $('#MainFrm').serialize(), //参数的个数和名字要和方法的名字保持一致
+                success: function (json) //返回的是Json类型的
+                {
+                    if (json.Result == true) {
+                        //alert(json.Result);
+                        //$("#spread").OnSave();
+                        //parent.parent.parent.layer.msg('保存成功', 2, 1);
+                        window.location.reload();
+                    }
+                }
+            });
+
+            // parent.parent.layer.alert('编辑成功', 1);
+        });
+        $("#Minsubmit").click(function () {
+
+            $.ajax({
+                type: 'post',
+                url: '../ProcessMineralogyAPI/UpdateExperimentStatusBaseInfo', //路径为添加方法
+                data: $('#MainFrm').serialize(), //参数的个数和名字要和方法的名字保持一致
+                async: false, //同步
+                success: function (json) //返回的是Json类型的
+                {
+                    if (json.Result == true) {
+                        SaveAttachment();
+                        SaveSpread();
+                    }
+                }
+            });
+            var userLists = "";
+            $("input[type=checkbox]:checked").each(function () {
+                userLists += $(this).val() + ";";
+                $("#ApproveMyNote").val();
+            });
+            $.ajax({
+                type: "POST", //默认是GET
+                url: "../ProcessMineralogyAPI/SubmitExperimentStatusBaseInfo", //调用WebService的地址和方法名称组合 ---- WsURL/方法名
+                data: $('#MainFrm').serialize(),
+                async: false, //同步
+                cache: false, //不加载缓存
+                success: function (json) {
+                    //返回的result就是json格式的
+                    //var tmp = "";
+                    if (json.Result == true) {
+                        parent.parent.parent.layer.msg('已完成！', 2, 1);
+                        parent.window.location.href = parent.window.location.href;
+                    }
+                },
+                error: function () {
+                    alert("提交失败");
+                }
+            });
+
+        });
+          
+
+        //下载的绑定事件
+        $("body").on("click", ".span-attachment", function (event) {
+            var ahref = $(this).find("a");
+            var attid = $(ahref).attr('attr_id');
+            var attrPath = $(ahref).attr('attr_path');
+            var attrFileName = $(ahref).attr('attr_filename');
+            $('#ifDownloadpage').attr('src', '../Portal/DownloadPage' + '?AttachID=' + attid + "&OrigPath=" + attrPath + "&FileName=" + attrFileName);
+        });
+
+        //动态添加行，绑定动态行里的附件上传
+        $('body').on("click", ".x-spread-add", function() {
+            var cloneTr = $(".row_tpl:first").clone();
+
+            $(cloneTr).removeClass("row_tpl").addClass("row_data").show();
+            //计数器
+            var icnt = $(".row_tpl:first").attr("icnt");
+            icnt = parseInt(icnt) + 1;
+            $(".row_tpl:first").attr("icnt", icnt);
+            $(cloneTr).find("input").each(function(idx, obj) {
+                var prop_name = $(obj).attr("prop_name");
+                $(obj).attr("id", prop_name + icnt);
+            });
+            $(cloneTr).find("div").each(function(idx, obj) {
+                var prop_name = $(obj).attr("prop_name");
+                $(obj).attr("id", prop_name + icnt);
+            });
+            //赋值好的动态增行插入到table的第一行，并且让按钮调用attachment插件
+            $(".row_tpl:first").after(cloneTr);
+            $(cloneTr).find("input").each(function(idx, obj) {
+                if ($(this).attr("class") == "row_attachment") {
+                    $(this).attachmentInit({ RelatedID: 0, RelatedType: 9, DivId: 'row_div_upload' + icnt });
+                }
+            });
+        });
+        //删除动态增行的行数据
+        $("body").on("click", ".x-spread-del", function (event) {
+            var trParent = $(this).parentsUntil(".row_data").parent();
+            var id = $(trParent).find("input[prop_name='MyID']").val();
+
+            $('#delIds').val($('#delIds').val() + "," + id);
+
+            var row_cnt = $(".row_data").length;
+            if (row_cnt > 1) {
+                $(trParent).remove();
+            }
+            event.stopPropagation();
+        });
+        //保存附件
+        function SaveAttachment() {
+            //保存单个的附件
+            $('#lbtnBaseUpload').attachmentSave({ RelatedID: "@Model.MyID", RelatedType: 3, DivId: 'divBaseUpload' });
+        }//end o func
+        //保存动态增行的数据以及动态增行的附件
+        function SaveSpread() {
+            var arr = [];
+            var bln = false;
+            var myids = "";
+            //先删除要删除的
+            $.ajax({
+                type: 'post',
+                url: '../ProcessMineralogyAPI/CharacteristicRecordDelete',
+                data: 'MyIds=' + $('#delIds').val(),
+                success: function (json)//返回的是Json类型的
+                {
+                    $('#delIds').val("");
+                }//end of success
+            })//end of func
+
+            $('.row_data').each(function (idx, obj) {
+                var jVal = {};
+                var tr = $(this);
+                $(this).find("input[type='text']").each(function (idx, obj) {
+                    var property = $(obj).attr('prop_name');
+                    if (property != undefined && property != null && property != "") {
+                        jVal[property] = $(obj).val();
+                    }
+                })
+                //调用了uploadify之后，按钮会变成div，都是第三方控件内部搞的
+                var upload_flash_div = $(this).find("div[prop_name='row_div_upload']");
+                arr.push(jVal);
+                $.ajax({
+                    type: 'post',
+                    url: '../ProcessMineralogyAPI/CharacteristicRecordOneRow',//路径为添加方法
+                    data: 'ItemID=' + itemid + '&MyID=' + jVal['MyID'] + '&Code=' + jVal['Code'] + '&Describe=' + jVal['Describe'],//参数的个数和名字要和方法的名字保持一致
+                    success: function (json)//返回的是Json类型的
+                    {
+                        if (json.Data.MyID > 0) {
+                            //alert("save:" + json.Data.MyID);
+                            $(tr).find("input[prop_name='MyID']").val(json.Data.MyID);
+                            //逐行保存对应的附件
+                            $(upload_flash_div).attachmentSave({ RelatedID: json.Data.MyID, RelatedType: 9, DivId: $(upload_flash_div).attr('id') });
+                        }
+                    }
+                });
+            })//end each
+        }//end of SaveSpread
+
+    });
+
+
+    $(function () {
+        //上传附件的绑定
+        $('#lbtnBaseUpload').attachmentInit({ RelatedID: "@Model.MyID", RelatedType: 3, DivId: 'divBaseUpload' });
+
+    });
+
+    //渲染动态增行的函数
+    function InitView() {
+        $(".row_data").remove();
+
+        var json_data = [];
+        //首次加载要去读数据
+        $.ajax({
+            type: 'post',
+            url: "../ProcessMineralogyAPI/CharacteristicRecord",//路径为添加方法
+            data: 'ItemID=' + itemid + '&JsonVal=&Action=Read',//参数的个数和名字要和方法的名字保持一致
+            success: function (json)//返回的是Json类型的
+            {
+                json_data = json.Data;
+                if (json.Result == true) {
+                    $(".row_tpl:first").hide();
+                    //啥也没有时，直接增加一行
+                    if (json_data.length == 0) {
+                        var firstTr = $(".row_tpl:first").clone();
+                        $(firstTr).removeClass("row_tpl").addClass("row_data").show();
+                        $(firstTr).find("input").each(function (idx, obj) {
+                            var prop_name = $(obj).attr("prop_name");
+                            $(obj).attr("id", prop_name + 0);
+                        })
+                        $(firstTr).find("div").each(function (idx, obj) {
+                            var prop_name = $(obj).attr("prop_name");
+                            $(obj).attr("id", prop_name + 0);
+                        })
+
+                        $(".row_tpl:first").after(firstTr);
+                        $(".row_tpl:first").attr("icnt", 0);
+                        //绑定上传附件
+                        $(firstTr).find("input").each(function (idx, obj) {
+                            if ($(this).attr("class") == "row_attachment") {
+                                $(this).attachmentInit({ RelatedID: 0, RelatedType: 9, DivId: 'row_div_upload' + 0 });
+                            }
+                        })
+                    }
+                    for (var i = 0; i < json_data.length; i++) {
+                        $(".row_tpl:first").attr("icnt", json_data.length);
+                        var cloneTr = $(".row_tpl:first").clone();
+                        $(cloneTr).removeClass("row_tpl").addClass("row_data").show();
+
+                        $(cloneTr).find("input").each(function (idx, obj) {
+                            var prop_name = $(obj).attr("prop_name");
+                            $(obj).val(json_data[i][prop_name]);
+                            $(obj).attr("id", prop_name + i);
+                        })
+                        $(cloneTr).find("div").each(function (idx, obj) {
+                            var prop_name = $(obj).attr("prop_name");
+                            $(obj).attr("id", prop_name + i);
+                        })
+                        $(".row_tpl:first").after(cloneTr);
+
+                        var myid = $(cloneTr).find("input[prop_name='MyID']").val();
+                        //alert("Init:"+myid);
+
+                        $(cloneTr).find("input").each(function (idx, obj) {
+                            if ($(this).attr("class") == "row_attachment") {
+                                $(this).attachmentInit({ RelatedID: myid, RelatedType: 9, DivId: 'row_div_upload' + i });
+                            }
+                        })
+                    }//end for
+
+                }//end if
+            }//end success
+        });//end ajax
+       
+    }//end func
+
+</script>
+<script id="submit_Lists" type="text/x-jsrender">
+    <input type="checkbox" value="{{>UserID}}" />
+    <label>{{>FullName}}</label>
+
+</script>
+<script id="approve_Lists" type="text/x-jsrender">
+    <tr>
+        <td>{{>UserName}}</td>
+        <td>{{>ResultText}}</td>
+        <td>{{>MyNote}}</td>
+        <td>{{>SubmitDateStr}}</td>
+        <td></td>
+    </tr>
+</script>
+<form id="MainFrm">
+    <input type="hidden" id="delIds" />
+    <div>
+        @*<%--        <center>
+                <div style="margin: 10px 0; font-size: 18px;">
+                    显微镜下特征描述
+                </div>
+            </center>--%>*@
+        <table id="Table3" class="App_TableBlock" align="center" border="0" cellspacing="0"
+               width="100%">
+            <tbody>
+                <tr>
+                    <td colspan="8" class="TableHeader">
+                        X-射线衍射分析、扫描电镜分析、MLA测试、粒度分析
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <input id="txtMyID" class="display_none" type="text" value="@Model.MyID" name="MyID" />
+        <input id="txtItemID" class="display_none" type="text" value="@Model.ItemID" name="ItemID" />
+        <input id="txtOrigID" class="display_none" type="text" value="@Model.OrigID" name="OrigID" />
+        <input id="txtType" class="display_none" type="text" value="@Model.Type" name="Type" />
+        <input id="txtCreateBy" title="创建人" class="display_none" value="@Model.CreateBy" name="CreateBy"></input>
+        <input id="txtCreater" title="创建人" class="display_none" value="@Model.CreatorID" name="CreatorID"></input>
+        <input id="txtCreatDate" title="创建时间" class="display_none" value="@Model.CreateDate" name="CreateDate"></input>
+        <div id="stage-1" class="stage">
+
+            <div>
+                <table id="spread" style="width:100%">
+                    <tr>
+                        <th class="TableLabel" style="background-color: transparent;"></th>
+                        <th class="TableLabelNoWidth ">样品编号</th>
+                        <th class="TableLabelNoWidth">特征描述</th>
+                        <th class="TableLabelNoWidth"></th>
+                    </tr>
+                    <tr class="row_tpl" >
+                        <td>
+                            <a class="x-spread-add">
+                                <span class="k-icon k-i-close link-blue">新增</span>
+                            </a>
+                            <a class="x-spread-del">
+                                <span class="k-icon k-i-close  link-blue">删除</span>
+                            </a>
+                        </td>
+                        <td>
+                            <input type="text" class="k-textbox Width90" value="" prop_name="Code" />
+                            <input type="text" class="k-textbox Width90" prop_name="MyID" style="display:none" value="0" />
+                        </td>
+                        <td>
+                            <input type="text" class="k-textbox Width90" value="" prop_name="Describe" />
+                        </td>
+                        <td>                                    
+                            <input type="button" id="cydin" class="row_attachment" value="上传" prop_name="row_btn_upload" div_panel="cydindiv" />                            
+                        </td>
+                        <td>
+                            <div id="cydindiv" prop_name="row_div_upload"></div>
+                        </td>
+                    </tr>
+                </table>
+                <div class="table-wrapper">
+                    <table id="page1_block1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                           width="100%">
+                        <tbody>
+                            <tr style="display: none;">
+                                <td colspan="2" class="TableHeader">
+                                    基本信息
+                                </td>
+                            </tr>
+                            <tr id="page1_block1_row7" expland="true">
+                                <td width="150" nowrap="" class="TableLabel">
+                                    <input type="button" value="上传附件" class="btn-red" id="lbtnBaseUpload" >                                                                  
+                                </td>
+                                <td colspan="7" class="TableData Width90">
+                                    <div style="margin: 0 0 5px 0px" id="divBaseUpload">
+
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <center>
+        <table style="margin: 5px 0">
+            <tbody>
+                <tr align="center">
+                    <td id="tdEdit">
+                        <input value="保存" class="btn-blue" type="button" id="btnMinEdit" />
+                        <input value="完成" class="btn-blue" type="button" id="Minsubmit" />
+                    </td>
+                    <td id="tdSubmit" class="display_none">
+                        <span><img src="@Url.Content("~/Content/Images/submited.png")" /></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </center>
+
+    <iframe id="ifDownloadpage" style="display:none"></iframe>
+    @*<input type="button"  id="testSave" value="保存单附件的"/>
+    <input type="button" id="testSpread" value="动态增行附件的" />*@
+
+
+</form>
+

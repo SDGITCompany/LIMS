@@ -1,0 +1,100 @@
+﻿<#@ template language="C#" debug="True" hostspecific="True" #>
+<#@ assembly name="System.Data" #> 
+<#@ assembly name="System.xml" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Data.SqlClient" #>
+<#@ import namespace="System.Data" #>
+<#@ include file="Manager.tt"#>
+
+<# var manager = Manager.Create(Host, GenerationEnvironment); #>
+   
+
+ 
+<#   
+           string connectionString="Server =192.168.40.18\\XFORM;database =KCZYS_LIMS;User ID = sa;Password =406ITAUTOitauto";
+           SqlConnection conn = new SqlConnection(connectionString);
+           conn.Open();
+           DataTable schema = conn.GetSchema("TABLES"); 
+           string strSql = "select * from @tableName";  
+           SqlCommand command = new SqlCommand(strSql,conn);
+           SqlDataAdapter ad = new SqlDataAdapter(command); 
+           DataSet ds = new DataSet();        
+		   int idx = 0;         
+           foreach(DataRow row in schema.Rows)        
+           {      
+			idx++;
+			#>  
+		   <# manager.StartNewFile(row["TABLE_NAME"].ToString().Trim()+"MD.cs"); #>          
+			                                                  
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace KCZYLIMS.Models
+{                    
+                                                                 
+			public partial class <#= row["TABLE_NAME"].ToString().Trim() #>MD : EntityMD                     
+			{                       
+				<#                         
+                  ds.Tables.Clear(); 
+
+                  command.CommandText = strSql.Replace("@tableName",row["TABLE_NAME"].ToString());
+                  ad.FillSchema(ds, SchemaType.Mapped, row["TABLE_NAME"].ToString());                        
+                  foreach (DataColumn dc in ds.Tables[0].Columns) 
+                  {    #>     
+				  
+					<#
+					string propName = dc.DataType.Name.ToLower();
+					if( propName.Contains("str") )
+					{#>
+					<#= dc.DataType.Name #>  _<#= dc.ColumnName #> = string.Empty;
+					<#
+					}   
+					else if( propName.Contains("int") )
+					{#>
+					<#= dc.DataType.Name #>  _<#= dc.ColumnName #> = 0;
+					<#     
+					}      
+					else if( propName.Contains("float") || propName.Contains("double") )
+					{#>
+					<#= dc.DataType.Name #>  _<#= dc.ColumnName #> = 0;
+					<#
+					}
+					else if( propName.Contains("bool") )
+					{#>
+					<#= dc.DataType.Name #>  _<#= dc.ColumnName #> = false;
+					<#
+					}
+					else if( propName.Contains("date") )
+					{ #>
+					<#= dc.DataType.Name #>  _<#= dc.ColumnName #> = DateTime.Now;
+					<#
+					}
+					else
+					{#>
+					<#= dc.DataType.Name #>  _<#= dc.ColumnName #> = 0;
+					<#}#>
+		        
+				public <#= dc.DataType.Name #> <#= dc.ColumnName #> 
+				{ 
+					get{ return _<#= dc.ColumnName #>;  }
+					set{ _<#= dc.ColumnName #> = value; }
+				}
+              <# }  #>        				        
+			}               
+			                   
+}
+ 
+			<# manager.EndBlock(); #>
+           
+
+           <# 
+             }    
+            #>                
+           <# conn.Close(); #>
+
+
+<# manager.Process(true); #>
+
+

@@ -1,0 +1,94 @@
+﻿@{
+    ViewBag.Title = "InstrumentAppointmentLists";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+<script type="text/javascript">
+    $(function () {
+        var origid;
+        var strOrigID = getUrlQueryString('OrigID');
+        if (strOrigID) {
+            origid = parseInt(strOrigID);
+        } else {
+            origid = parseInt(getUrlQueryString('ItemID')) - 2;
+        }    
+        $("#gvPhaseAnalysis").wyGrid({ allowAjax: true, urlPath: "../InstrumentManagementAPI/GetInstrumentAppointmentDataSet", pageSize: 5, funcAjaxCallBack: AjaxCallBack, entityName: origid });
+        $("#btnDelete").click(function () {
+            if (chkclick()) {
+                $.ajax({
+                    type: 'post',
+                    url: '../InstrumentManagementAPI/DeleteAppointmentItems', //路径为添加方法
+                    data: "myIDs=" + $('#hf').val(), //参数的个数和名字要和方法的名字保持一致
+                    success: function (json) //返回的是Json类型的
+                    {
+                        if (json.Result == true) {
+                            parent.parent.parent.layer.msg('删除成功', 2, 1);
+                            window.location.href = window.location.href;
+                        }
+                    }
+                });
+            }
+        });
+          
+    });
+    function chkclick() {
+        var rst = true;
+        var selectedIDs = [];
+        $("#gvPhaseAnalysis input[name='selRecord']:checked").each(function () {
+            var value = $(this).parent().next().text();
+            selectedIDs.push(value);
+        });
+        var myIds = selectedIDs.toString();
+        if (myIds == "") {
+            rst = false;
+            alert("请选择要删除的项！");
+        } else {
+            if (confirm("确定要删除选中的记录吗?")) {
+                $("#hf").val(myIds);
+            } else {
+                rst = false;
+            }
+        }
+        return rst;
+    }
+    function AjaxCallBack(data) {
+        var trs = $("#product_template").render(data);
+        $("#gvPhaseAnalysis tr:not(:first)").remove();
+        $("#gvPhaseAnalysis tr:first").after(trs);
+    }
+</script>
+<script id="product_template" type="text/x-jsrender">
+    <tr>
+        <td class="GridNumeric ID_Col">{{>MyID}}</td>
+        <td><a onclick="openDialogWindow('../InstrumentManagement/AddAppointmentPage?ItemID={{>MyID}}', '', '', 'Parent')" href="javascript:;">{{>MyName}} </a></td>
+        <td>{{>MyCode}} </td>
+        <td>{{>AppointDate}}</td>
+        <td>{{>AppointType}}</td>
+        <td></td>
+
+    </tr>
+</script>
+<div id="mainTable">
+    <div id="Div2">
+        <input type="hidden" id="hf" />
+        <span>            
+            <span style="margin-left: 15px;">
+                <a href="javascript:__doPostBack('btnReferenceCreate','')" class="ActionA RecordNew" id="btnReferenceCreate" onclick="openDialogWindow('../InstrumentManagement/AddAppointmentPage?ItemID=' + getUrlQueryString('ItemID') + '&Name=' + getUrlQueryString('Name') + '&Code=' + getUrlQueryString('Code'), '', '', 'Parent')">新建</a>
+                </span>
+                <span style="margin-left: 15px;">
+                    <a href="javascript:__doPostBack('btnReferenceDelete','')" class="ActionA RecordMultDel" id="btnDelete" onclick="if(!chkclick(this))return false;">删除</a>
+                </span>
+            </span>
+    </div>
+    <table cellspacing="0" style="width:100%;border-collapse:collapse;" id="gvPhaseAnalysis">
+        <tbody>
+            <tr>
+                <th style="width:80px;" scope="col">序号</th>
+                <th style="width:200px;" scope="col">仪器名称</th>
+                <th style="width:200px;" scope="col">仪器编号</th>
+                <th style="width:200px;" scope="col">预约日期</th>
+                <th style="width:200px;" scope="col">预约时间</th>
+                <th style="width:1200px;" scope="col"></th>
+            </tr>
+        </tbody>
+    </table>
+</div>

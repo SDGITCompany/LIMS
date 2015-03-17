@@ -1,0 +1,193 @@
+﻿@{
+    ViewBag.Title = "物理检测";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script type="text/javascript">
+    $(function () {
+
+/*        $("#gvPhaseAnalysis").wyGrid({
+            allowAjax: true, urlPath: "../PortalAPI/GetDataSet", pageSize: 5, funcAjaxCallBack: AjaxCallBack, entityName: 3,
+            allowAutoSearch: true,
+            searchOption: {
+                formID: "searchForm",
+                searchID: "btnSearch",
+                searchPath: "../PortalAPI/AjaxProjectSearch",
+            }
+        });*/
+        $("#btnDelete").click(function () {
+            if (chkclick()) {
+                $.ajax({
+                    type: 'post',
+                    url: '../ProcessMineralogyAPI/DeleteItems', //路径为添加方法
+                    data: "myIDs=" + $('#hf').val(), //参数的个数和名字要和方法的名字保持一致
+                    success: function (json) //返回的是Json类型的
+                    {
+                        if (json.Result == true) {
+                            parent.parent.parent.layer.msg('删除成功', 2, 1);
+                            window.location.href = window.location.href;
+                        }
+                    }
+                });
+            }
+        });
+
+    });
+    function chkclick() {
+        var rst = true;
+        var selectedIDs = [];
+        $("#gvPhaseAnalysis input[name='selRecord']:checked").each(function () {
+            var value = $(this).parent().next().text();
+            selectedIDs.push(value);
+        });
+        var myIds = selectedIDs.toString();
+        if (myIds == "") {
+            rst = false;
+            alert("请选择要删除的项！");
+        } else {
+            if (confirm("确定要删除选中的记录吗?")) {
+                $("#hf").val(myIds);
+            } else {
+                rst = false;
+            }
+        }
+        return rst;
+    }
+    function AjaxCallBack(data) {
+        var trs = $("#product_template").render(data);
+        $("#gvPhaseAnalysis tr:not(:first)").remove();
+        $("#gvPhaseAnalysis tr:first").after(trs);
+    }
+    function IsShowRight() {
+        $.ajax({
+            type: "POST", //默认是GET
+            url: "@Url.Content("~/CommonSvr/IsShowRight")", //调用WebService的地址和方法名称组合 ---- WsURL/方法名
+            async: false, //同步
+            cache: false, //不加载缓存
+            success: function (json) {
+                //返回的结果为真时，隐藏相应的GROUPID
+                if (json.physicalDetectionOutSideCreate == true && json.physicalDetectionInSideCreate == true) {
+                    $("#div_operate").hide();
+                    // $("#gvPhaseAnalysis tbody tr td[align='center']").hide();
+                    
+                    $("#gvPhaseAnalysis").wyGrid({
+                        allowAjax: true,
+                        urlPath: "../PortalAPI/GetDataSet",
+                        pageSize: 5,
+                        funcAjaxCallBack: AjaxCallBack,
+                        entityName: 3,
+                        allowAutoSearch: true,
+                        allowSelected: false,
+                        searchOption: {
+                            formID: "searchForm",
+                            searchID: "btnSearch",
+                            searchPath: "../PortalAPI/AjaxProjectSearch",
+                        }
+                    });
+                } else {
+                    $("#gvPhaseAnalysis").wyGrid({
+                        allowAjax: true,
+                        urlPath: "../PortalAPI/GetDataSet",
+                        pageSize: 5,
+                        funcAjaxCallBack: AjaxCallBack,
+                        entityName: 3,
+                        allowAutoSearch: true,
+                        searchOption: {
+                            formID: "searchForm",
+                            searchID: "btnSearch",
+                            searchPath: "../PortalAPI/AjaxProjectSearch",
+                        }
+                    });
+                    if (json.physicalDetectionOutSideCreate == false) {
+                        $("#btnCreate").click(function () {
+                            openDialogWindow('../PhysicalDetection/Index?ItemID=0&Type=OutSide', '', '');
+                        });
+                    } else if (json.physicalDetectionInSideCreate == false) {
+                        $("#btnCreate").click(function () {
+                            openDialogWindow('../PhysicalDetection/Index?ItemID=0&Type=InSide', '', '');
+                        });
+                    }
+
+                }
+                if (json.processMineralogy == true) {
+                    $("#li_ProcessMineralogy").hide();
+                }
+                if (json.chemicalPhaseAnalysisOutSide == false || json.chemicalPhaseAnalysisInSide == false) {
+                    $("#li_ChemicalPhaseAnalysis").show();
+                } else {
+                    $("#li_ChemicalPhaseAnalysis").hide();
+                }
+                if (json.physicalDetectionOutSide == false || json.physicalDetectionInSide == false) {
+                    $("#li_PhysicalDetection").show();
+                } else {
+                    $("#li_PhysicalDetection").hide();
+                }
+                if (json.instrumentManagement == true) {
+                    $("#li_InstrumentManagement").hide();
+                }
+                if (json.search == true) {
+                    $("#li_ProjectSearch").hide();
+                }
+                if (json.yiBiaoPan == true) {
+                    $("#li_YiBiaoPan").hide();
+                }
+            }
+        });
+    };
+</script>
+<script id="product_template" type="text/x-jsrender">
+    <tr>
+        <td class="GridNumeric ID_Col">{{>MyID}}</td>
+        <td><a onclick="openDialogWindow('../PhysicalDetection/Index?ItemID={{>OrigID}}', '', '')" href="javascript:;">{{>MyName}} </a></td>
+        <td>{{>MyCode}} </td>
+        <td>{{>Principal}}</td>
+        <td>{{>Client}}</td>
+        <td></td>
+
+    </tr>
+</script>
+<form id="searchForm">
+    <div style="padding: 10px" id="highSearchContent">
+        <input type="hidden" id="hf" />
+        <span style="padding-left: 20px; padding-top: 15px; font-weight: bold; height: 30px">
+            搜索：
+        </span>
+        <span style="display:inline-block;">
+            <span style="margin-right:10px;">序号:</span>
+            <input type="text" style="margin-right:10px;" name="MyID">
+        </span>
+        <span style="display:inline-block;">
+            <span style="margin-right:10px;">项目名称:</span>
+            <input type="text" style="margin-right:10px;" name="MyName">
+        </span>
+        <span style="display:inline-block;">
+            <span style="margin-right:10px;">项目编号:</span>
+            <input type="text" style="margin-right:10px;" name="MyCode">
+            <input type="text" class="display_none" name="Specialty" value="3">
+        </span>
+        <input type="hidden" id="SearchFlag" name="SearchFlag" />
+        <input type="button" class="btn-green" id="btnSearch" value="搜索" name="btnSearch">
+        <input type="button" class="btn-green" id="btnRefresh" value="全部" name="btnRefresh" onclick=" location.replace(location.href)">
+    </div>
+</form>
+<div id="mainTable">
+    <div id="div_operate" style="margin: 10px;">
+        <span>
+            <input ID="btnCreate" type="button" runat="server" value="新建" class="btn-blue" />
+            <span>
+                <input type="button" ID="btnDelete" runat="server" value="删除" class="btn-blue" />
+            </span>
+        </span>
+    </div>
+    <table cellspacing="0" style="width:100%;border-collapse:collapse;" id="gvPhaseAnalysis">
+        <tbody>
+            <tr>
+                <th style="width:80px;" scope="col">序号</th>
+                <th style="width:200px;" scope="col">项目名称</th>
+                <th style="width:200px;" scope="col">项目编号</th>
+                <th style="width:200px;" scope="col">负责人</th>
+                <th style="width:200px;" scope="col">客户名称</th>
+                <th style="width:1200px;" scope="col"></th>
+            </tr>
+        </tbody>
+    </table>
+</div>

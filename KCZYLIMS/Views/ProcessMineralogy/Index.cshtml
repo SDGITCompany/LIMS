@@ -1,0 +1,341 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = null;
+}
+@model KCZYLIMS.Models.kczy_ProjectAttorneyMD
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Scripts/KendoUI/styles/kendo.common.min.css" rel="stylesheet" />
+<link href="~/Scripts/kendoUI/styles/kendo.default.min.css" rel="stylesheet" type="text/css" />
+<link href="~/Scripts/kendoUI/styles/kendo.dataviz.min.css" rel="stylesheet" type="text/css" />
+<link href="~/Scripts/kendoUI/styles/kendo.dataviz.default.min.css" rel="stylesheet" type="text/css" />
+<script src="~/Scripts/jquery-1.7.1.min.js"></script>
+<script src="~/Scripts/xPlugin/jquery.wyGrid.js"></script>
+<script src="~/Scripts/XGrid/Common.js"></script>
+<script src="~/Scripts/kendoUI/js/jquery.min.js" type="text/javascript"></script>
+<script src="~/Scripts/kendoUI/js/kendo.all.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        $(".App_TableBlock:not(:first)").each(function () {
+            $(this).find("tr:not(:first)").hide();
+        });
+        $("tr[expland='true']").each(function () {
+            $(this).parent().find("tr:not(:first)").show();
+        });
+
+        $(".App_TableBlock").find("tr:first").bind("click",
+        function () {
+            $(this).parent().find("tr:not(:first)").toggle();
+        });
+
+        /*   $("div[class=App_TableBlock]").hide();
+        $("div[class=App_TableBlock]:first").show();*/
+        $("div[class=App_TableBlock]").parent().find("table").bind("click",
+        function () {
+            /*$("div[class=App_TableBlock]").hide();*/
+            $(this).parent().find("div[class=App_TableBlock]").toggle();
+
+        });
+
+        if (getUrlQueryString('ItemID') == "0") {
+            $("#IFProjectAttorney").attr("src", "ProjectAttorneyForYuanOutside?ItemID=0");
+        } else {
+            GetItemInfo(getUrlQueryString('ItemID'));
+        }
+        $("#orientation").kendoDropDownList({
+            dataTextField: "text",
+            dataValueField: "value",
+            value: "@Model.MyType",
+            dataSource: [{ text: "院外", value: "0" },
+                        { text: "岩矿鉴定", value: "1" }, { text: "院内", value: "2" }, { text: "所内", value: "3" }],
+            select: onSelect,
+            enable: getUrlQueryString('ItemID')==0
+            
+        });
+        function onSelect(e) {
+            var dataItem = this.dataItem(e.item.index());
+            var value = dataItem.value;
+            SetIframe(value,"0","");
+        }
+        
+        $(".k-dropdown-wrap").attr("style", "background-color:white;");
+        $(".k-widget").attr("style", "width:100px;font-size:11pt;");
+
+        
+    });
+
+    function SetIframe(value, itemId, status) {
+        /*if (itemId == 0) {
+            $("#orientation").kendoDropDownList({enable:false});
+        }*/
+        if (value=="0") {
+            $("#IFProjectAttorney").attr("src", "ProjectAttorneyForYuanOutside?ItemID=" + itemId + "&Status=" + status);
+        } else if (value == "2") {
+            $("#IFProjectAttorney").attr("src", "ProjectAttorneyinternalPage?ItemID=" + itemId + "&Status=" + status);
+        }
+        else if (value == "1") {
+            $("#IFProjectAttorney").attr("src", "ProjectAttorneyForOre?ItemID=" + itemId + "&Status=" + status);
+        }else if (value == "3") {
+            $("#IFProjectAttorney").attr("src", "ProjectAttorneyForSuo?ItemID=" + itemId + "&Status=" + status);
+        }
+    }
+    function flowOver() {
+        $(this).css("color", "black");
+    }
+    function flowOut() {
+        $(this).css("color", "white");
+    }
+    function flowClick() {
+        var id = $(this).attr("id");
+        if (id == 's1') {
+            location.hash = '#t1';
+            $("div[class=App_TableBlock]").hide();
+            $("#t1").next().find(".App_TableBlock:not(:first)").show();
+        } else if (id == 's2') {
+            location.hash = '#t2';
+            $("div[class=App_TableBlock]").hide();
+            $("#t2").next().find(".App_TableBlock:not(:first)").show();
+        } else if (id == 's3') {
+            location.hash = '#t3';
+            $("div[class=App_TableBlock]").hide();
+            $("#t3").next().find(".App_TableBlock:not(:first)").show();
+        } else if (id == 's4') {
+            location.hash = '#t4';
+            $("div[class=App_TableBlock]").hide();
+            $("#t4").next().find(".App_TableBlock:not(:first)").show();
+        }
+    }
+    function GetItemInfo(val) {
+        $.ajax({
+            type: 'post',
+            url: '../CommonSvr/ViewState', //路径为添加方法
+            data: { intOrigID: val }, //参数的个数和名字要和方法的名字保持一致
+            success: function (json) //返回的是Json类型的
+            {
+                if (json.Result == true) {
+                    if (json.Items.length <= 0) {
+                        return;
+                    }
+                    var status = json.Status;
+                    if (json.IsActiveUser == false) {
+                        status = "CompletedStatus";
+                    }
+                    for (var i = 0; i < json.Items.length; i++) {
+                        var formId = json.Items[i].FormID;
+                        var itemId = json.Items[i].ItemID;
+                        //console.log(itemId);
+                        //console.log(@Model.ItemID);
+                        if (formId == 12) {                             //项目委托
+                            $("#divProjectAttorney").attr("ItemID", itemId);
+
+                            SetIframe("@Model.MyType", itemId, status);
+                            // $("#IFProjectAttorney").attr("src", "ProjectAttorneyForYuanOutside?ItemID=" + itemId + "&Status=" + json.Status);
+                            $("#s1").addClass("Current_Flow").bind("click", flowClick).bind("mouseover", flowOver).bind("mouseout", flowOut);
+                        }
+                        if (formId == 14) {                            //项目策划
+                            $("#divProjectPlan").attr("ItemID", itemId);
+                            $("#divProjectPlan").show();
+                            $("#IFProjectPlan").attr("src", "ProjectPlan?ItemID=" + itemId + "&Status=" + status);
+                            SetIframe("@Model.MyType", $("#divProjectAttorney").attr("ItemID"), "CompletedStatus");
+                            $("#s1").removeClass("Current_Flow").addClass("Completed_Flow");
+                            $("#s2").removeClass("UnDone_Flow").addClass("Current_Flow").bind("click", flowClick).bind("mouseover", flowOver).bind("mouseout", flowOut);
+                        }
+                        if (formId == 16) {                            //实验原始记录
+                            $("#divExperimentsRecord").attr("ItemID", itemId);
+                            $("#divExperimentsRecord").show();
+                            $("#IFProjectPlan").attr("src", "ProjectPlan?ItemID=" + $("#divProjectPlan").attr("ItemID") + "&Status=CompletedStatus");
+                            SetIframe("@Model.MyType", $("#divProjectAttorney").attr("ItemID"), "CompletedStatus");
+                           /* $("#IFPhaseAnalysis").attr("src", "../ProcessMineralogy/PhaseAnalysis?ItemID=" + itemId + "&Type=1");
+                            $("#IFChemicalPhaseAnalysis").attr("src", "../ProcessMineralogy/ChemicalPhaseAnalysis?ItemID=" + itemId + "&Type=2");
+                            $("#IFCharacteristic").attr("src", "../ProcessMineralogy/Characteristic?ItemID=" + itemId + "&Type=3"); */
+                            //当前活动的ItemID
+                            var activeItemId=json.ActiveItem;
+                            if (activeItemId == $("#divExperimentsRecord").attr("ItemID")) {
+                                $("#IFExperimentsRecord").attr("src", "../ProcessMineralogy/ExperimentsRecord?ItemID=" + itemId + "&&Status=" + status + "&&IsActive=True");
+                            } else {
+                                $("#IFExperimentsRecord").attr("src", "../ProcessMineralogy/ExperimentsRecord?ItemID=" + itemId + "&&Status=" + status);
+                            }
+                            
+                            $("#s2").removeClass("Current_Flow").addClass("Completed_Flow");
+                            $("#s3").removeClass("UnDone_Flow").addClass("Current_Flow").bind("click", flowClick).bind("mouseover", flowOver).bind("mouseout", flowOut);
+                        }
+                        if (formId == 18) {                           //项目审批
+                            $("#divProjectApproval").attr("ItemID", itemId);
+                            $("#divProjectApproval").show();
+                            $("#IFProjectPlan").attr("src", "ProjectPlan?ItemID=" + $("#divProjectPlan").attr("ItemID") + "&Status=CompletedStatus");
+                            SetIframe("@Model.MyType", $("#divProjectAttorney").attr("ItemID"), "CompletedStatus");
+                            $("#IFExperimentsRecord").attr("src", "../ProcessMineralogy/ExperimentsRecord?ItemID=" + $("#divExperimentsRecord").attr("ItemID") + "&&Status=CompletedStatus");
+                            $("#IFProjectApproval").attr("src", "../ProcessMineralogy/ProjectApproval?ItemID=" + itemId + "&&Status=" + status);
+                            $("#s3").removeClass("Current_Flow").addClass("Completed_Flow");
+                            $("#s4").removeClass("UnDone_Flow").addClass("Current_Flow").bind("click", flowClick).bind("mouseover", flowOver).bind("mouseout", flowOut);
+                            if (json.Status == "CompletedStatus") {
+                                $("#s4").removeClass("Current_Flow").addClass("Completed_Flow");
+                            }
+                        }
+                    }
+                    var activeItem = json.ActiveItem;
+                    if (activeItem != "0") {
+                        $("div[class=App_TableBlock]").hide();
+                        $("div[itemid='" + activeItem + "'] .App_TableBlock:not(:first)").show();
+                    }
+                }
+            }
+        });
+    };
+    //弹框返回后获得的父页面就是这里，所以特别绕
+    function ResponsorSetter() {
+        var strRetValue = $('#hfValue').val();
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 3) {
+                $('#IFProjectAttorney').contents().find('#txtPrincipal').val(words[2]);
+                $('#IFProjectAttorney').contents().find('#txtPrincipalID').val(words[0]);
+            }
+        }
+        window.parent.$('.xubox_close')[1].click();
+    }
+
+    function ParticipantResponsorSetter() {
+        var strRetValue = $('#hfValue').val();
+        var parNames = "";
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 3) {
+                parNames = parNames + "#" + words[0] + "|" + words[1] + "|" + words[2];
+                $('#IFProjectAttorney').contents().find('#divParticipants').append('<span  onmouseover="show_delete(this)" onmouseout="hide_delete(this)" >' + words[2] + '<a href="javascript:void(0)" class="selecter_delete" style="display: none;"  onclick="delete_click(this)" attr_id=' + words[0] + ' attr_type=' + words[1] + ' attr_name=' + words[2] + '></a></span>&nbsp;');
+            }
+        }
+        $('#IFProjectAttorney').contents().find('#txtParticipants').val(parNames);
+        window.parent.$('.xubox_close')[1].click();
+    }
+    function WriterResponsorSetter() {
+        var strRetValue = $('#hfValue').val();
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 3) {
+                $('#IFProjectApproval').contents().find('#txtWriter').val(words[2]);
+                $('#IFProjectApproval').contents().find('#txtWriterID').val(words[0]);
+            }
+        }
+        window.parent.$('.xubox_close')[1].click();
+    }
+    function ClientSetter() {
+        var strRetValue = $('#hfValue').val();
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 7) {
+                $('#IFProjectAttorney').contents().find('#txtClient').val(words[1]);
+                $('#IFProjectAttorney').contents().find('#txtClientID').val(words[0]);
+            }
+        }
+        window.parent.$('.xubox_close')[1].click();
+    }
+    function ParentClientSetter() {
+        var strRetValue = $('#hfValue').val();
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 7) {
+                window.parent.$('.xubox_iframe:eq(1)').contents().find('#txtParentName').val(words[1]);
+                window.parent.$('.xubox_iframe:eq(1)').contents().find('#txtParentID').val(words[0]);
+            }
+        }
+        window.parent.$('.xubox_close')[2].click();
+    }
+</script>
+
+<input type="hidden" id="hfValue" name="hfValue" />
+
+<div id="tabs" style="margin: auto;">
+    <div id="navReg" style="position: fixed; height: 40px; line-height: 40px; background: #eeeeee;width: 100%; top:0;left:0;">
+        <div class="title" style="position: relative">
+            <a href="#">工艺矿物学研究 >></a>
+            <ul id="ulType" style="width: 200px; position: absolute; left: 13%; top: -140%; list-style-type: none;">
+                <li>
+                    <input id="orientation" name="orientation" />
+                </li>
+            </ul>
+        </div>
+        <div style="position: absolute; top: 0.6%; left: 35%; font-size: 12pt;width:60%">
+            <span class="Normal_Flow Current_Flow" id="s1">项目委托书</span><span class="Normal_Flow UnDone_Flow" id="s2">项目策划书</span><span class="Normal_Flow UnDone_Flow" id="s3">实验原始记录</span><span class="Normal_Flow UnDone_Flow" id="s4">项目审批表</span>
+        </div>
+    </div>
+    <div id="stage-1" class="stage" >        
+        <div id="t1" style="height: 40px; line-height: 40px;background-color:white;"></div>
+        <div class="table-wrapper" id="divProjectAttorney" FormID="12">
+            <table id="Table2" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="TableHeader">
+                            <a id="projectAttorney" style="color: #383838; cursor: pointer;">项目委托书</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="App_TableBlock" id="m1">
+                <iframe  width="99%" allowtransparency="yes" frameborder="0" height="650px" id="IFProjectAttorney"></iframe>
+            </div>
+        </div>
+        
+        <div id="t2" style="height: 40px; line-height: 40px;background-color:white;"></div>
+        <div class="table-wrapper" id="divProjectPlan" FormID="14" style="display: none;">
+            <table id="Table1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="TableHeader">
+                            <a class="alink" style="color: #383838; cursor: pointer;">项目策划书</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="App_TableBlock" id="m2">
+                <iframe width="99%" allowtransparency="yes" frameborder="0" height="550px" id="IFProjectPlan"></iframe>
+            </div>
+        </div>
+        <div id="t3" style="height: 40px; line-height: 40px; background-color: white;"></div>
+        <div class="table-wrapper" id="divExperimentsRecord" formid="16" style="display: none;">
+            <table id="Table4" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="TableHeader">
+                            <a class="alink" style="color: #383838; cursor: pointer;">实验原始记录</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="App_TableBlock" id="m3">
+                @*<iframe  width="99%" allowtransparency="yes" frameborder="0" height="350px" id="IFPhaseAnalysis"></iframe>
+                <iframe  width="99%" allowtransparency="yes" frameborder="0" height="350px" id="IFChemicalPhaseAnalysis"></iframe>
+                <iframe  width="99%" allowtransparency="yes" frameborder="0" height="380px" id="IFCharacteristic"></iframe>*@
+                <iframe width="99%" allowtransparency="yes" frameborder="0" height="1200px" id="IFExperimentsRecord"></iframe>
+            </div>
+        </div>        
+        <div id="t4" style="height: 40px; line-height: 40px; background-color: white;"></div>
+        <div class="table-wrapper" formid="18" style="display: none;" id="divProjectApproval">
+            <table id="Table3" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="TableHeader">
+                            <a class="alink" style="color: #383838; cursor: pointer;">项目审批表</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="App_TableBlock" id="m4">
+                <iframe  width="99%" allowtransparency="yes" frameborder="0" height="550px" id="IFProjectApproval"></iframe>
+            </div>
+        </div>
+        </div>
+</div>

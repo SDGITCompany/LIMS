@@ -1,0 +1,323 @@
+﻿@{
+    ViewBag.Title = "ExperimentRecords";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+@model KCZYLIMS.Models.kczy_ExperimentRecordsMD
+
+<script type="text/javascript">
+    $(function () {
+        $("#approvelTable").wyGrid({ PageSize: 5, allowDisabledPageSize: true, allowSelected: false });
+        InitButtonInfo('', '../ChemicalPhaseAnalysisAPI/UpdateExperimentRecords');
+        /*$("#approve_div,#appInfo").hide();*/
+        $("#ddlBeiginStatus").get(0).options["@Model.BeiginStatus"].selected = true;
+        $("#ddlEndStatus").get(0).options["@Model.EndStatus"].selected = true;
+
+       
+        $("#txtAnalyst").click(function () {
+            openDialogWindow("../Selector/UserSelector?ReturnCtrl=hfValue&CallBack=AnalystResponsorSetter()&MultiSelect=false&Type=1", "950", "600", "false");
+        });
+        $("#txtInstrumentName").click(function () {
+            openDialogWindow("../Selector/InstrumentSelector?ReturnCtrl=hfValue&CallBack=InstrumentDataResponsorSetter()&MultiSelect=false&Type=1", "850", "500", "false");
+        });
+        //下载附件
+        $("body").on("click", ".span-attachment", function (event) {
+            var ahref = $(this).find("a");
+            var attid = $(ahref).attr('attr_id');
+            var attrPath = $(ahref).attr('attr_path');
+            var attrFileName = $(ahref).attr('attr_filename');
+            $('#ifDownloadpage').attr('src', '/Portal/DownloadPage' + '?AttachID=' + attid + "&OrigPath=" + attrPath + "&FileName=" + attrFileName);
+        });
+        $("#btnEdit").click(function () {
+            SaveAttachment();
+        });
+        //附件的控件
+        var itemid = getUrlQueryString('ItemID');
+        $('#lbtnBaseUpload').attachmentInit({ RelatedID: itemid, RelatedType: 2, DivId: 'divBaseUpload' });
+        $("#approvelTable").hide();
+        $("#appInfo").hide();
+        $("#submit").unbind("click");
+        $("#submit").click(function () {
+            if (checkForm()) {
+                SaveAttachment();
+                $.ajax({
+                    type: 'post',
+                    async: false, //同步
+                    url: '../ChemicalPhaseAnalysisAPI/UpdateExperimentRecords', //路径为添加方法
+                    data: $('#MainFrm').serialize(), //参数的个数和名字要和方法的名字保持一致
+                });
+            }
+            var userLists = "";
+            $("input[type=checkbox]:checked").each(function () {
+                userLists += $(this).val() + ";";
+                $("#ApproveMyNote").val();
+            });
+            if (userLists != "") {
+                $.ajax({
+                    type: "POST", //默认是GET
+                    url: "../CommonSvr/Submit", //调用WebService的地址和方法名称组合 ---- WsURL/方法名
+                    data: { "ItemID": getUrlQueryString('ItemID'), "Notes": $("#ApproveMyNote").val(), "NextUsers": userLists },
+                    async: false, //异步
+                    cache: false, //不加载缓存
+                    success: function (result) {
+                        //返回的result就是json格式的
+                        //var tmp = "";
+                        parent.parent.layer.msg('提交成功', 2, 6);
+                        var index = parent.window.location.href.indexOf('#');
+                        if (index == -1) {
+                            parent.window.location.href = parent.window.location.href;
+                        } else {
+                            parent.window.location.href = parent.window.location.href.substr(0, index);
+                        }
+                    },
+                    error: function () {
+                        parent.parent.layer.msg("提交失败", 2, 8);
+                    }
+                });
+            } else {
+                parent.parent.layer.msg('请您选择下一步审批人！', 2, 15);
+            }
+        });
+    });
+    //保存附件
+    function SaveAttachment() {
+        //保存单个的附件
+        $('#lbtnBaseUpload').attachmentSave({ RelatedID: getUrlQueryString('ItemID'), RelatedType: 2, DivId: 'divBaseUpload' });
+    }//end o func
+</script>
+<script id="submit_Lists" type="text/x-jsrender">
+    <input type="checkbox" value="{{>UserID}}" checked="checked"/>
+    <label>{{>FullName}}</label>    
+
+</script>
+<script id="approve_Lists" type="text/x-jsrender">
+    <tr>
+        <td>{{>UserName}}</td>
+        <td>{{>ResultText}}</td>
+        <td>{{>MyNote}}</td>
+        <td>{{>SubmitDateStr}}</td>
+        <td></td>
+    </tr>
+</script>
+<form id="MainFrm">
+    <iframe id="ifDownloadpage" style="display:none;"></iframe>
+    <div>
+        <div class="table-wrapper">
+            <table id="Table1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr style="display: none;">
+                        <td colspan="4" class="TableHeader">
+                            基本信息
+                        </td>
+                    </tr>
+                    <tr id="Tr4">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  Red">项目名称</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtMyID" class="display_none" type="text" value="@Model.MyID" name="MyID" />
+                            <input class="display_none" type="text" value="@Model.ItemID" name="ItemID" />
+                            <input class="display_none" type="text" value="@Model.OrigID" name="OrigID" />
+                            <input class="display_none" type="text" value="2" name="Specialty" />
+                            <input id="txtMyName" class="InputField Width80" readonly="readonly" type="text" name="MyName" value="@Model.MyName" require="must" />
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  Red">项目编号</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtMyCode" class="InputField Width80" type="text" name="MyCode" value="@Model.MyCode" require="must" />
+                        </td>
+                    </tr>
+                    <tr id="Tr1">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">仪器名称</span>
+                        </td>
+                        <td class="TableData Width40">
+                            @*<input id="txtInstrumentID" name="InstrumentID" class="display_none" value="@Model.in"></input>*@
+                            <input id="txtInstrumentName" type="text" name="InstrumentName" class="InputField Width80 refField"
+                                   onfocus="this.className='InputFocus Width80 refField'" onblur="this.className='InputField Width80 refField'"
+                                   require="must" readonly="readOnly" value="@Model.InstrumentName" />
+                            <a href="javascript:void(0)" id="a2" class="ref-delete-handle inline-block"></a>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">仪器编号</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtInstrumentUsageItemID" value="@Model.InstrumentUsageItemID" type="hidden" name="InstrumentUsageItemID" />
+                            <input id="txtInstrumentCode" class="InputField Width80" readonly="readonly" type="text" name="InstrumentCode" value="@Model.InstrumentCode" />
+                        </td>
+                    </tr>
+                    <tr id="Tr8">
+
+                        @*<td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent ">仪器状态</span>
+                            </td>
+                            <td class="TableData Width40">
+                                <select id="Select1" class="TableData Width80">
+                                    <option value="0" selected="selected">--正常--</option>
+                                    <option value="1">--异常--</option>
+                                </select>
+                            </td>*@
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">实验人员</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtAnalystID" name="AnalystID" class="display_none" value="@Model.AnalystID"></input>
+                            <input id="txtAnalyst" type="text" name="Analyst" class="InputField Width80 refField"
+                                   onfocus="this.className='InputFocus Width80 refField'" onblur="this.className='InputField Width80 refField'"
+                                   require="must" readonly="readOnly" value="@Model.Analyst" />
+                            <a href="javascript:void(0)" id="a2" class="ref-delete-handle inline-block"></a>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">样品名称</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtSampleName" class="InputField Width80" type="text" name="SampleName" value="@Model.SampleName"/>
+                        </td>
+                    </tr>
+                    <tr id="Tr9">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">开始时间</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtBeginDate" class="InputField Width80 dateField" type="text" name="BeginDate" onfocus="this.className='InputFocus Width80 dateField'" onblur="this.className='InputField Width80 dateField'"
+                                   onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', maxDate: '#F{$dp.$D(\'txtEndDate\')||\'%y-%M-%d\'}' });" value="@Model.BeginDate" readonly="readonly"/>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">结束时间</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtEndDate" class="InputField Width80 dateField"
+                                   onfocus="this.className = 'InputFocus Width80 dateField'" onblur="this.className = 'InputField Width80 dateField'"
+                                   onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', minDate: '#F{$dp.$D(\'txtBeginDate\')}'});" title="完成日期"
+                                   readonly="readonly" name="EndDate" value="@Model.EndDate">
+                            </input>
+                        </td>
+                    </tr>
+                    <tr id="Tr6">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">仪器使用前状态</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <span>
+                                <select name="BeiginStatus" id="ddlBeiginStatus" class="InputField Width80 "
+                                        title="" datatype="select" require="none">
+                                    <option value="0">--请选择--</option>
+                                    <option value="1">--正常--</option>
+                                    <option value="2">--损坏--</option>
+                                </select>
+                            </span>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">仪器使用后状态</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <span>
+                                <select name="EndStatus" id="ddlEndStatus" class="InputField Width80 "
+                                        title="" datatype="select" require="none">
+                                    <option value="0">--请选择--</option>
+                                    <option value="1">--正常--</option>
+                                    <option value="2">--损坏--</option>
+                                </select>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr id="Tr2" expland="true">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">实验记录</span>
+                        </td>
+                        <td class="TableData Width90" colspan="7">
+                            <textarea rows="5" class="InputField Width90 " id="txtRecords" name="Records">@Model.Records</textarea>
+                        </td>
+                    </tr>
+                    <tr id="Tr3">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">备注</span>
+                        </td>
+                        <td class="TableData Width90" colspan="7">
+                            <textarea rows="5" class="InputField Width90 " id="txtRemark" name="Remark">@Model.Remark</textarea>
+                        </td>
+                    </tr>
+                    <tr id="page1_block1_row7" expland="true">
+                        <td width="150" nowrap="" class="TableLabel">
+                            <input type="button" value="上传附件" class="btn-red" id="lbtnBaseUpload">
+                        </td>
+                        <td colspan="7" class="TableData Width90">
+                            <div style="margin: 0 0 5px 0px" id="divBaseUpload">
+
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-wrapper">
+            <table id="Table5" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="TableHeader">
+                            记录信息
+                        </td>
+                    </tr>
+                    <tr id="Tr14">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">创建人</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                        <input class="display_none" value="@Model.CreatorID" name="CreatorID"></input>
+                        <input id="txtCreateBy" title="创建人" class="InputField Width90 InputReadonly"
+                               maxlength="100" datatype="text" readonly="True" value="@Model.CreateBy" name="CreateBy"></input>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">创建时间</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtCreatDate" title="创建时间" class="InputField Width80 InputReadonly"
+                                   maxlength="100" datatype="datetime" readonly="True" value="@Model.CreateDate" name="CreateDate"></input>
+                        </td>
+                    </tr>
+                    <tr id="Tr15">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">最后修改人</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input class="display_none" value="@Model.ModifierID"></input>
+                            <input id="txtModifiedBy" title="最后修改人"
+                                   class="InputField Width90 InputReadonly" maxlength="100" datatype="datetime"
+                                   readonly="True" value="@Model.ModifiedBy"></input>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">最后修改时间</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtLastModified" title="最后修改时间"
+                                   class="InputField Width80 InputReadonly" maxlength="100" datatype="datetime"
+                                   readonly="True" value="@Model.LastModified"></input>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <center>
+            <div id="appInfo" style="display: none;"><span style="margin-left: 10px;">意见:</span><input id="ApproveMyNote" class="" type="text" style="width: 300px;"></input><span id="approveUsers" style="margin-left: 30px;">下一级审批人：</span></div>
+        </center>
+        <table style="margin: 5px 0" width="100%">
+            <tbody>
+                <tr align="center">
+                    <td id="tdCteat">
+                        <input value="保存" class="btn-blue" type="button" id="btnSave" />
+                    </td>
+                    <td id="tdEdit" style="display: none;">
+                        <input value="保存" class="btn-blue" type="button" id="btnEdit" />
+                        <input value="完成" class="btn-blue" type="button" id="submit" />
+                    </td>
+                    <td id="tdApprove" style="display: none;">
+                        <input value="同意" class="btn-blue" type="button" id="btnApprove" />
+                        <input value="驳回" class="btn-blue" type="button" id="btnReject" />
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</form>

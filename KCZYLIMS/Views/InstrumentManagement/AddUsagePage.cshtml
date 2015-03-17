@@ -1,0 +1,205 @@
+﻿@{
+    ViewBag.Title = "AddUsagePage";
+Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+@model KCZYLIMS.Models.kczy_InstrumentUsageMD
+<script>
+    $(function() {
+        if (getUrlQueryString('Name') != null & getUrlQueryString('Code') != null) {
+            LoadUrl(getUrlQueryString('Name'), getUrlQueryString('Code'));
+        }
+
+        var path = "";
+        if ("@Model.MyName" == "") {
+            path = '../InstrumentManagementAPI/CreateInstrumentUsage';
+            $("#div_Lists").hide();
+        } else {
+            path = '../InstrumentManagementAPI/UpdateInstrumentUsage';
+               
+        }
+        $("#txtOperater").click(function () {
+            openDialogWindow("../Selector/UserSelector?ReturnCtrl=hfValue&CallBack=OperaterResponsorSetter()&MultiSelect=false&Type=1", "950", "600", "false");
+        });
+        $("#btnSave").click(function() {
+            if (checkForm()) {
+            var val = getUrlQueryString('ItemID');
+            $.ajax({
+                type: 'post',
+                url: path, //路径为添加方法
+                /*data: "{ 'model': " + $('#MainFrm').serialize() + ", 'sitemid': " + val + " }", //参数的个数和名字要和方法的名字保持一致*/
+                data: $('#MainFrm').serialize() + "&sitemid=" + val,
+                success: function(json) //返回的是Json类型的
+                {
+                    if (json.Result == true) {
+                        parent.parent.layer.msg('保存成功', 2, 1);
+                        window.parent.$('.xubox_close')[1].click();
+                    }
+                }
+            });
+          }
+        });
+    });
+
+    function LoadUrl(para, codepara) {
+        $.ajax({
+            type: 'post',
+            url: '../XHttp/LoadUrlQueryParam', //路径为添加方法
+            data: 'name=' + para + '&code=' + codepara, //参数的个数和名字要和方法的名字保持一致
+            success: function (json) //返回的是Json类型的
+            {
+                if (json.Result == true) {
+                    $("#txtMyName").val(json.Name);
+                    $("#txtMyCode").val(json.Code);
+
+                }
+            }
+        });
+    };
+</script>
+
+<form id="MainFrm">
+    <div>
+        <div id="navReg">
+            <div class="title">
+                <a href="#">仪器使用记录</a>
+            </div>
+        </div> 
+        <div class="table-wrapper">
+            <table id="Table1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="TableHeader">
+                            基本信息
+                        </td>
+                    </tr>
+                    <tr id="Tr4">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">仪器名称</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtMyID" class="display_none" type="text" value="@Model.MyID" name="MyID" />
+                            <input class="display_none" type="text" value="@Model.ItemID" name="ItemID" />
+                            <input class="display_none" type="text" value="@Model.OrigID" name="OrigID" />
+                            <input id="txtMyName" class="InputField Width80" type="text" name="MyName" value="@Model.MyName" require="must" />
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">仪器编号</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtMyCode" class="InputField Width80" type="text" name="MyCode" value="@Model.MyCode" require="must" />
+                        </td>
+                    </tr>
+                    <tr id="Tr9">
+                    
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">分析项目</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtProjectName" class="InputField Width80" type="text" name="ProjectName" value="@Model.ProjectName"/>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">项目编号</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtProjectCode" class="InputField Width80" type="text" name="ProjectCode" value="@Model.ProjectCode"/>
+                        </td>
+                    </tr>
+                    <tr id="Tr1">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">开始时间</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtBeginDate" class="InputField Width80 dateField" type="text" name="BeginTime" onfocus="this.className='InputFocus Width80 dateField'" onblur="this.className='InputField Width80 dateField'"
+                                   onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', maxDate: '#F{$dp.$D(\'txtEndDate\')}' });" value="@Model.BeginTime" readonly="readonly"/>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">结束时间</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtEndDate" class="InputField Width80 dateField"
+                                   onfocus="this.className='InputFocus Width80 dateField'" onblur="this.className='InputField Width80 dateField'"
+                                   onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', minDate: '#F{$dp.$D(\'txtBeginDate\')}'});" title="完成日期"
+                                    name="EndTime" value="@Model.EndTime" readonly="readonly">
+                            </input>
+                        </td>
+                    </tr>
+                    <tr id="Tr1">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">使用人</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtOperaterID" class="display_none" type="text" value="@Model.OperaterID" name="OperaterID" />
+                            <input id="txtOperater" class="InputField Width80 refField" type="text" name="Operater" value="@Model.Operater" readonly="readonly"/>
+                            <a href="javascript:void(0)" id="a2" class="ref-delete-handle inline-block"></a>
+                        </td>
+                    </tr>
+                    <tr id="Tr6">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">备注</span>
+                        </td>
+                        <td class="TableData Width90" colspan="7">
+                            <textarea rows="5" class="InputField Width90 " id="Remark" name="Remark">@Model.Remark</textarea>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-wrapper">
+            <table id="Table5" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="TableHeader">
+                            记录信息
+                        </td>
+                    </tr>
+                    <tr id="Tr14">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">创建人</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                        <input class="display_none" value="@Model.CreatorID" name="CreatorID"></input>
+                        <input id="txtCreateBy" title="创建人" class="InputField Width90 InputReadonly"
+                               maxlength="100" datatype="text" readonly="True" value="@Model.CreateBy" name="CreateBy"></input>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">创建时间</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtCreatDate" title="创建时间" class="InputField Width80 InputReadonly"
+                                   maxlength="100" datatype="datetime" readonly="True" value="@Model.CreateDate" name="CreateDate"></input>
+                        </td>
+                    </tr>
+                    <tr id="Tr15">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">最后修改人</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input class="display_none" value="@Model.ModifierID"></input>
+                            <input id="txtModifiedBy" title="最后修改人"
+                                   class="InputField Width90 InputReadonly" maxlength="100" datatype="datetime"
+                                   readonly="True" value="@Model.ModifiedBy"></input>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">最后修改时间</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtLastModified" title="最后修改时间"
+                                   class="InputField Width80 InputReadonly" maxlength="100" datatype="datetime"
+                                   readonly="True" value="@Model.LastModified"></input>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <table style="margin: 5px 0" width="100%">
+            <tbody>
+                <tr align="center">
+                    <td>
+                        <input ID="btnSave"   class="btn-blue" value="保存" type="button" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</form>

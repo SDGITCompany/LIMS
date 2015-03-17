@@ -1,0 +1,322 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>产品选择器</title>
+
+
+    <script src="@Url.Content("~/Scripts/jquery.min.js")" type="text/javascript"></script>
+
+    <script src="@Url.Content("~/Scripts/xPlugin/jquery.wyGrid.js")" type="text/javascript"></script>
+
+    <script src="@Url.Content("~/Scripts/Third/zTree_v3/js/jquery.ztree.all-3.5.min.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/Third/jsrender.min.js")" type="text/javascript"></script>
+
+    <script src="@Url.Content("~/Scripts/Third/layer-v1.8.5/layer/layer.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/XGrid/Common.js")"></script>
+    <link href="@Url.Content("~/Scripts/Third/zTree_v3/css/zTreeStyle/zTreeStyle.css")" rel="stylesheet">
+
+    <link href="@Url.Content("~/Content/global.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Style.css")" rel="stylesheet" />
+
+
+
+    <style type="text/css">
+
+    </style>
+
+
+    <script id="product_template" type="text/x-jsrender">
+        <tr>
+            <td>
+                <input type="checkbox" class="chk_id" attr_id="{{>MyID}}" parent_id="{{>ParentID}}" text="{{>MyName}}" value="{{>MyID}};{{>MyName}};{{>Contact}};{{>TelePhone}};{{>Fax}};{{>PostCode}};{{>Address}}" />
+            </td>
+            <td>{{>MyName}}</td>
+            <td>{{>ParentName}}</td>
+            <td></td>
+        </tr>
+    </script>
+
+    <script type="text/javascript">
+        var setting = {
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback: {
+                onClick: zTreeOnClick,
+                onExpand: zTreeOnExpand,
+                onCollapse: zTreeOnCollapse
+            }
+        };
+        //异步加载和渲染函数
+        function RenderTpl() {
+            $("#product_tbl").wyGrid({ allowAjax: true, urlPath: "../Selector/GetCustomerDataSet", allowSelected: false, pageSize: 15, funcAjaxCallBack: AjaxCallBack });
+        }
+
+        //点击，展开等函数
+        function zTreeOnClick(event, treeId, treeNode) {
+            $("#btn_search").text("搜索");
+            //jsrender前台模板渲染
+            RenderTpl();
+        };
+        function zTreeOnCollapse(event, treeId, treeNode) {
+            //$(".ico_docu").removeClass("ico_docu").addClass("ico_close");
+        }
+        function zTreeOnExpand(event, treeId, treeNode) {
+            //$(".ico_docu").removeClass("ico_docu").addClass("ico_close");
+        }
+
+        function chkclick() {
+            var rst = true;
+            var selectedIDs = [];
+            $("#product_tbl input[type='checkbox']:checked").each(function () {
+                var value = $(this).attr("attr_id");
+                selectedIDs.push(value);
+            });
+            var myIds = selectedIDs.toString();
+            if (myIds == "") {
+                rst = false;
+                alert("请选择要删除的项！");
+            } else {
+                if (confirm("确定要删除选中的记录吗?")) {
+                    $("#hf").val(myIds);
+                } else {
+                    rst = false;
+                }
+            }
+            return rst;
+        }
+        //tree相关的函数
+        $(function () {
+            IsMultiSel = getUrlQueryString('MultiSelect');
+            //if (z_nodes != null && z_nodes != undefined && z_nodes != "") {
+            //$.fn.zTree.init($("#treeFolder"), setting, z_nodes);
+            //}
+            RenderTpl();
+            //确认返回
+            $('#btnConfirm').click(function () {
+                var retVal = "";
+                $('#lstSelected option').each(function (idx, obj) {
+                    retVal = retVal + $(obj).attr("value") + "#";
+                })
+                @Html.Raw( ViewData["JS"] )  
+            })
+            //$("#add_client_loader").load("../Customer/AddCustomerPage");
+            //调用ajax 搜索
+            $("#btnSearch").click(function () {
+
+            })
+            //取消搜索
+            $('#btnCancelSearch').click(function () {
+
+            })
+            //删除，确定，返回，添加等
+            $('#btnAdd').on("click", function () {
+                $("#hfType").val("0");
+                $("#add_client_loader").load("../Customer/AddCustomerPage?MyID=0");
+                $("#mainDIV").hide();
+                $("#add_client_loader").show();
+/*                $(".chk_id").each(function (idx, obj) {
+                    if ($(this).is(':checked')) {
+                        if (IsMultiSel == 'true') {
+                            var chkValue = $(this).attr("value");
+                            var blnIsExist = false;
+                            $('#lstSelected option').each(function (idx, obj) {
+                                if ($(obj).attr("value") == chkValue) {
+                                    blnIsExist = true;
+                                    return false;
+                                }
+                            })
+                            if (blnIsExist == false) {
+                                $('#lstSelected').append("<option value='" + $(this).attr('value') + "'>" + $(this).attr("text") + "</option>");
+                            }
+                        }
+                        else { //单选
+                            var chkValue = $(this).attr("value");
+                            $(".chk_id").each(function (idx, obj) {
+                                if ($(this).is(':checked') && $(this).attr('value') != chkValue) {
+                                    $(this).removeAttr("checked");
+                                }
+                            })
+
+                            $('#lstSelected option').remove();
+                            $('#lstSelected').append("<option value='" + $(this).attr('value') + "'>" + $(this).attr("text") + "</option>");
+                        }
+                    }
+                })*/
+            })
+            $("#btnRemove").on("click", function () {
+                $("#lstSelected option:selected").remove();
+            });
+            $("#btnEdit").on("click", function () {
+                var myId = $("#product_tbl input[type='checkbox']:checked").attr("attr_id");
+                if (myId != undefined) {
+                    $("#hfType").val(myId);
+                    $("#add_client_loader").load("../Customer/AddCustomerPage?MyID=" + myId);
+                    $("#mainDIV").hide();
+                    $("#add_client_loader").show();
+                } else {
+                    parent.parent.layer.alert("请选择一项后，再进行编辑!", 5);
+                }
+            });
+            $("#btnDel").click(function () {
+                if (chkclick()) {
+                    $.ajax({
+                        type: 'post',
+                        url: '/CustomerAPI/DeleteItems', //路径为添加方法
+                        data: "myIDs=" + $('#hf').val(), //参数的个数和名字要和方法的名字保持一致
+                        success: function (json) //返回的是Json类型的
+                        {
+                            if (json.Result == true) {
+                                parent.parent.parent.layer.msg('删除成功', 2, 1);
+                                window.location.href = window.location.href;
+                            }
+                        }
+                    });
+                }
+            });
+            ////////////////////////////////////////////////////////////
+            $(document).on("click", '.chk_id', function () {
+                if ($(this).is(':checked')) {
+                    if (IsMultiSel == 'true') {
+                        var chkValue = $(this).attr("value");
+                        var blnIsExist = false;
+                        $('#lstSelected option').each(function (idx, obj) {
+                            if ($(obj).attr("value") == chkValue) {
+                                blnIsExist = true;
+                                return false;
+                            }
+                        })
+                        if (blnIsExist == false) {
+                            $('#lstSelected').append("<option value='" + $(this).attr('value') + "'>" + $(this).attr("text") + "</option>");
+                        }
+                    }
+                    else {
+                        var chkValue = $(this).attr("value");
+                        $(".chk_id").each(function (idx, obj) {
+                            if ($(this).is(':checked') && $(this).attr('value') != chkValue) {
+                                $(this).removeAttr("checked");
+                            }
+                        })
+
+                        $('#lstSelected option').remove();
+                        $('#lstSelected').append("<option value='" + $(this).attr('value') + "'>" + $(this).attr("text") + "</option>");
+                    }
+                }
+            });
+            ///////////////////////////////////////////////////////////////////
+
+            ///////试着加载add页面
+            //$('#btnAdd').click(function () {
+                //$('#add_client_loader').width(1000);
+                //$("#add_client_loader").load("/Customer/AddCustomerPage?MyID=0");
+                //$.layer({
+                //    type: 1,
+                //    shade: [0],
+                //    zIndex:1000,
+                //    area: ['1000px', '600px'],
+                //    offset:['50px','100px'],
+                //    title: false,
+                //    border: [2, 0.3, '#000'],
+                //    shade: [0.5, '#000'],
+                //    page: { dom: '#client_loader' }
+                //});
+                //$('#add_client_loader').width(1000);
+                ////$("#add_client_loader").load("/Customer/AddCustomerPage?MyID=0");
+                //$.layer({
+                //    type: 1,
+                //    fix: false,
+                //    area: ['1000px', '600px'],
+                //    moveOut: true,
+                //    zIndex: 2,
+                //    shade: [0],
+                //    title: '层：' + 2,
+                //    offset: ['200px', '200px'],
+                //    //以下对html做转义是为了防止被代码演示解析，实际应用时无需转义
+                //    page: { html: '<\a href="javascript:;" id="next" class="next">点击继续弹出窗口\<\/a> <\a style="margin-top:10px;" class="btns" href="javascript:;" onclick="layer.closeAll();">关闭所有\<\/a>' },
+                //    success: function (othis) {
+                //        //开启点击使当前窗口置顶功能
+                //        layer.setTop(othis);
+                //    }
+                //});
+            //})
+
+        })
+
+        function AjaxCallBack(data) {
+
+            $("#product_tbl > tbody > tr:gt(0)").remove();
+            $("#product_tbl > tbody > tr:first").after($("#product_template").render(data));
+        }
+
+    </script>
+
+
+</head>
+<body>
+    <!---------上方menu------------>
+    @using (Html.BeginForm())
+{
+    <input type="hidden" id="hf" />
+    <div id="mainDIV">
+        <input type="hidden" id="hfType" />
+        <div id='tool-bar' attr='toolbar' style='width: 700px;'>
+            <div style='float: left; margin-top: 5px;margin-left:10px'>
+                <input type="button" id="btnConfirm" class="btn-blue" value="确定" />
+                <input type="button" id="btnAdd" class="btn" value="新建" />
+                <input type="button" id="btnEdit" class="btn" value="编辑" />
+                <input type="button" id="btnDel" class="btn-red" value="删除" />
+            </div>
+            <div style="float: right; margin: 5px 5px 0 0">
+                <input type="text" style="width:200px" value="" />
+                <input type="button" id="btnSearch" class="btn" style="width:50px !important" value="搜索" />
+                <input type="button" id="btnCancelSearch" class="btn" value="取消搜索" />
+            </div>
+        </div>
+        <div style='clear: both;'>
+        </div>
+        <div id='layout-container' class='layout-container' style='width: 700px; height: auto;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                         border-top: 1px solid #C0C0C0; margin: 5px'>
+            <div id='left-bar' class='leftbar' style="width: 200px; height: 500px; float: left;display:none;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            overflow: scroll;">
+                <ul id="treeFolder" class="ztree"></ul>
+            </div>
+            <div id="mainGrid" style='float: left; width: 480px; height: 500px'>
+
+                <!----chk，序号，名称，---->
+                <table id="product_tbl" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                    <tbody>
+                        <tr id="product_tbl_header">
+                            <th style="width:50px">序号</th>
+                            <th style=" width:100px">名称</th>
+                            <th style="width:200px">上级客户</th>
+                            <th style="width:2000px"></th>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id='mid-mini-bar' class='mid_tools' style="width: 30px; height: 500px; float: left;padding-top: 50px; margin-left: 5px">
+                <input type="button" id="btnAddOne" value=">>" />
+                <input type="button" id="btnRemove" value="<<" />
+            </div>
+            <div id='right-bar' class='righttbar' style="width: 170px; height: 500px; float: left;border-left: 1px solid #C0C0C0; overflow-x: scroll; overflow-y: hidden">
+                <select size="30" name="lstSelected" id="lstSelected" style="width:100%;"></select>
+            </div>
+            <div style='clear: both;'>
+            </div>
+        </div>
+    </div>
+            <div id="add_client_loader" style="display: none"></div>
+}
+
+  
+
+</body>
+</html>

@@ -1,0 +1,169 @@
+﻿@{
+    ViewBag.Title = "AddCustomerPage";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+@model KCZYLIMS.Models.kczy_CustomerMD
+<script type="text/javascript">
+    $(function () {
+        $('#txtParentName').click(function () {
+            openDialogWindow("../Selector/ClientSelector?ReturnCtrl=hfValue&CallBack=ParentClientSetter()&MultiSelect=false&Type=1", "750", "500", "false");
+        });
+        $("#btnSave").click(function () {
+            var val = $("#hfType").val();
+            var path = "";
+            if (val == "0") {
+                path = '../CustomerAPI/CreateCustomer';
+            } else {
+                path = '../CustomerAPI/UpdateCustomer';
+
+            }
+            $.ajax({
+                type: 'post',
+                url: path, //路径为添加方法
+                /*data: "{ 'model': " + $('#MainFrm').serialize() + ", 'sitemid': " + val + " }", //参数的个数和名字要和方法的名字保持一致*/
+                async: false,
+                data: $('#MainFrm').serialize(),
+                success: function (json) //返回的是Json类型的
+                {
+                    if (json.Result == true) {
+
+                        parent.parent.layer.msg('保存成功', 2,1);
+                        window.location.href = window.location.href;
+                    }
+                }
+            });
+            
+        });
+    });
+    
+</script>
+<form id="MainFrm">
+    <div>
+        <div class="table-wrapper">
+            <table id="Table1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="TableHeader">
+                            基本信息
+                        </td>
+                    </tr>
+                    <tr id="Tr4">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  Red">客户名称</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtMyID" class="display_none" type="text" value="@Model.MyID" name="MyID" />
+                            <input class="display_none" type="text" value="@Model.ItemID" name="ItemID" />
+                            <input class="display_none" type="text" value="@Model.OrigID" name="OrigID" />
+                            <input id="txtMyName" class="InputField Width80" type="text" name="MyName" value="@Model.MyName" />
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent">上级客户名称</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtParentName" class="InputField Width80 refField" type="text" name="MyCode" value="@Model.ParentName" />
+                            <input class="display_none" type="text" value="@Model.ParentID" name="ParentID" id="txtParentID"/>
+                            <a href="javascript:void(0)" id="a2" class="ref-delete-handle inline-block"></a>
+                        </td>
+                    </tr>
+                    <tr id="Tr1">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">联系人</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtContact" type="text" name="Contact" class="InputField Width80" value="@Model.Contact"/>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">联系人电话</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtTelePhone" class="InputField Width80" name="TelePhone" value="@Model.TelePhone" type="text"/>
+                        </td>
+                    </tr>
+                    <tr id="Tr8">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">传真</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtFax" class="InputField Width80" name="Fax" value="@Model.Fax" type="text" />
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">邮编</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtPostCode" class="InputField Width80" name="PostCode" value="@Model.PostCode" type="text" />
+                        </td>
+                    </tr>
+                    <tr id="Tr8">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">通讯地址</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtAddress" class="InputField Width80" name="Address" value="@Model.Address" type="text" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-wrapper">
+            <table id="Table5" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="TableHeader">
+                            记录信息
+                        </td>
+                    </tr>
+                    <tr id="Tr14">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">创建人</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input class="display_none" value="@Model.CreatorID" name="CreatorID"></input>
+                            <input id="txtCreateBy" title="创建人" class="InputField Width90 InputReadonly"
+                                   maxlength="100" datatype="text" readonly="True" value="@Model.CreateBy" name="CreateBy"></input>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">创建时间</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtCreatDate" title="创建时间" class="InputField Width80 InputReadonly"
+                                   maxlength="100" datatype="datetime" readonly="True" value="@Model.CreateDate" name="CreateDate"></input>
+                        </td>
+                    </tr>
+                    <tr id="Tr15">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">最后修改人</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input class="display_none" value="@Model.ModifierID"></input>
+                            <input id="txtModifiedBy" title="最后修改人"
+                                   class="InputField Width90 InputReadonly" maxlength="100" readonly="True" value="@Model.ModifiedBy"></input>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">最后修改时间</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtLastModified" title="最后修改时间"
+                                   class="InputField Width80 InputReadonly" maxlength="100" datatype="datetime"
+                                   readonly="True" value="@Model.LastModified"></input>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <table style="margin: 5px 0" width="100%">
+            <tbody>
+                <tr align="center">
+                    <td id="tdCteat">
+                        <input value="保存" class="btn-blue" type="button" id="btnSave" />
+                    </td>
+                    <td id="tdEdit" style="display: none;">
+                        <input value="保存" class="btn-blue" type="button" id="btnEdit" />
+                        <input value="提交" class="btn-blue" type="button" id="submit" />
+                    </td>                    
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</form>

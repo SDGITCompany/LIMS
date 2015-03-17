@@ -1,0 +1,137 @@
+﻿@{
+    ViewBag.Title = "ExperimentsRecord";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+@model KCZYLIMS.Models.kczy_ExperimentsRecordBaseInfoMD
+<script type="text/javascript">
+    $(function() {
+        //$("#approvelTable").wyGrid({ PageSize: 5, allowDisabledPageSize: true, allowSelected: false });
+        var itemId = getUrlQueryString('ItemID');
+        var status = getUrlQueryString('Status');
+        var isactive = getUrlQueryString('IsActive');
+        RenderTpl(itemId);
+        $("#IFPhaseAnalysis").attr("src", "../ProcessMineralogy/PhaseAnalysis?ItemID=" + itemId + "&Type=1&Status=" + status);
+        $("#IFChemicalPhaseAnalysis").attr("src", "../ProcessMineralogy/ChemicalPhaseAnalysis?ItemID=" + itemId + "&Type=2&Status=" + status);
+        $("#IFCharacteristic").attr("src", "../ProcessMineralogy/Characteristic?ItemID=" + itemId + "&Type=3&Status=" + status);
+        //InitButtonInfo('', '');
+        $("#btnEdit").hide();
+        if (status == "CompletedStatus") {
+            $("#tdEdit").hide();
+        }
+/*        $("#tdEdit").show();
+        $("#tdApprove").hide();*/
+        //当前为活动节点时，执行此函数
+        if (isactive == 'True') {
+            if (IsAllSubmited(itemId) == true) {
+                var userLists = "";
+                $("input[type=checkbox]:checked").each(function () {
+                    userLists += $(this).val() + ";";
+                    $("#ApproveMyNote").val();
+                });
+                if (userLists != "") {
+                    $.ajax({
+                        type: "POST", //默认是GET
+                        url: "../CommonSvr/Submit", //调用WebService的地址和方法名称组合 ---- WsURL/方法名
+                        data: { "ItemID": getUrlQueryString('ItemID'), "Notes": $("#ApproveMyNote").val(), "NextUsers": userLists },
+                        async: false, //同步
+                        cache: false, //不加载缓存
+                        success: function (result) {
+                            var index = parent.window.location.href.indexOf('#');
+                            if (index == -1) {
+                                parent.window.location.href = parent.window.location.href;
+                            } else {
+                                parent.window.location.href = parent.window.location.href.substr(0, index);
+                            }
+                        },
+                        error: function () {
+                            //parent.parent.layer.msg("提交失败", 2, 8);
+                        }
+                    });
+                }
+            }
+        }
+    });
+    function IsAllSubmited(id) {
+        var result = false;
+        $.ajax({
+            type: "POST", //默认是GET
+            url: "../ProcessMineralogyAPI/IsAllExperimentSubmited", //调用WebService的地址和方法名称组合 ---- WsURL/方法名
+            data: "itemID="+id,
+            async: false, //异步
+            cache: false, //不加载缓存
+            success: function (json) {
+                //返回的result就是json格式的
+                //var tmp = "";
+                if (json.Result == true) {
+                    //$("#div_submit").show();
+                    result=true;
+                }
+            }
+           
+        });
+        return result;
+    }
+    function RenderTpl(tree_id) {
+        $.ajax({
+            type: "POST", //默认是GET
+            url: "../CommonSvr/NextStepUserRoles", //调用WebService的地址和方法名称组合 ---- WsURL/方法名
+            data: "ItemID=" + tree_id,
+            async: false, //同步
+            cache: false, //不加载缓存
+            success: function (result) {
+                //返回的result就是json格式的
+                //var tmp = "";
+                //alert(result);
+                //alert($("#product_template").render(result));
+                $("#approveUsers").after($("#submit_Lists").render(result.NextUsers));
+            },
+            error: function () {
+                //alert("请求失败");
+                $("#approveUsers").hide();
+                console.log("下一步审批人请求失败");
+                $("#hfLast").val("LastStep");
+            }
+        });
+    }
+</script>
+<script id="submit_Lists" type="text/x-jsrender">
+    <input type="checkbox" value="{{>UserID}}" checked="checked"/>
+    <label>{{>FullName}}</label>
+
+</script>
+<script id="approve_Lists" type="text/x-jsrender">
+    <tr>
+        <td>{{>UserName}}</td>
+        <td>{{>ResultText}}</td>
+        <td>{{>MyNote}}</td>
+        <td>{{>SubmitDateStr}}</td>
+        <td></td>
+    </tr>
+</script>
+<form id="MainFrm">
+    <iframe width="99%" allowtransparency="yes" frameborder="0" height="350px" id="IFPhaseAnalysis" ></iframe>
+    <iframe width="99%" allowtransparency="yes" frameborder="0" height="350px" id="IFChemicalPhaseAnalysis"></iframe>
+    <iframe width="99%" allowtransparency="yes" frameborder="0" height="380px" id="IFCharacteristic"></iframe>
+    <div id="div_submit" style="display: none;">
+        <center>
+            <div id="appInfo" style="display: none; margin-top: 30px;"><span style="margin-left: 10px;">意见:</span><input id="ApproveMyNote" class="" type="text" style="width: 300px;"></input><span id="approveUsers" style="margin-left: 30px;">下一级审批人：</span></div>
+        </center>
+        <table style="margin: 5px 0" width="100%">
+            <tbody>
+                <tr align="center">
+                    <td id="tdCteat">
+                        <input value="保存" class="btn-blue" type="button" id="btnSave" />
+                    </td>
+                    <td id="tdEdit" style="display: none;">
+                        <input value="保存" class="btn-blue" type="button" id="btnEdit" />
+                        <input value="完成" class="btn-blue" type="button" id="submit" />
+                    </td>
+                    <td id="tdApprove" style="display: none;">
+                        <input value="同意" class="btn-blue" type="button" id="btnApprove" />
+                        <input value="驳回" class="btn-blue" type="button" id="btnReject" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</form>

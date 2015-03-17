@@ -1,0 +1,51 @@
+﻿@{
+    Layout = null;
+}
+@model  KCZYLIMS.Models.UsersMD
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>登录页面</title>
+    <link href="@Url.Content("~/Content/global.css")" rel="stylesheet" />
+
+
+</head>
+<body>
+@using (Html.BeginForm())
+{
+    <div id="login_form">
+        <div id="login_input">
+            <table id="login_table">
+                <tr>
+                    <td style=" text-align:right;font-weight:bold">
+                        用户名:
+                    </td>
+                    <td style=" text-align:left">
+                        @Html.TextBoxFor(x => x.LoginName)
+                    </td>
+                    <td style=" text-align:right ;font-weight:bold">
+                        密码:
+                    </td>
+                    <td style=" text-align:left">
+                        @Html.PasswordFor(x => x.PassWord)
+                    </td>
+                    <td style=" text-align:left">
+                        <input type="submit" class="btn-blue" value="登录" />
+                    </td>
+                    <td style=" text-align:left">
+                        <input type="checkbox" />保存
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="loginMessage" style="color:red;">
+            <center>
+            @ViewData["message"]</center>
+        </div>
+    </div>
+}
+</body>
+</html>

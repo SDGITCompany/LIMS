@@ -1,0 +1,124 @@
+﻿@{
+    ViewBag.Title = "WeekReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+    $(function () {
+
+        //$("#gvPhaseAnalysis").wyGrid({ allowAjax: true, urlPath: "../PortalAPI/GetDataSet", pageSize: 5, funcAjaxCallBack: AjaxCallBack, entityName: 5 });
+        $("#gvPhaseAnalysis").wyGrid({
+            allowAjax: true, urlPath: "../PortalAPI/GetDataSet", pageSize: 5, funcAjaxCallBack: AjaxCallBack, entityName: 5, allowAutoSearch: true,
+            searchOption: {
+                formID: "searchForm",
+                searchID: "btnSearch",
+                searchPath: "../PortalAPI/AjaxProjectSearch",
+            }
+        });
+        $("#btnDelete").click(function () {
+            if (chkclick()) {
+                $.ajax({
+                    type: 'post',
+                    url: '/Reporter/DeleteItems', //路径为添加方法
+                    data: "myIDs=" + $('#hf').val(), //参数的个数和名字要和方法的名字保持一致
+                    success: function (json) //返回的是Json类型的
+                    {
+                        if (json.Result == true) {
+                            parent.parent.parent.layer.msg('删除成功', 2, 1);
+                            window.location.href = window.location.href;
+                        }
+                    }
+                });
+            }
+        });
+        $("#btnOthers").click(function() {
+            openDialogWindow('../Reporter/WeekReport', '', '');
+        });
+    });
+    function chkclick() {
+        var rst = true;
+        var selectedIDs = [];
+        $("#gvPhaseAnalysis input[name='selRecord']:checked").each(function () {
+            var value = $(this).parent().next().text();
+            selectedIDs.push(value);
+        });
+        var myIds = selectedIDs.toString();
+        if (myIds == "") {
+            rst = false;
+            alert("请选择要删除的项！");
+        } else {
+            if (confirm("确定要删除选中的记录吗?")) {
+                $("#hf").val(myIds);
+            } else {
+                rst = false;
+            }
+        }
+        return rst;
+    }
+    function AjaxCallBack(data) {
+        var trs = $("#product_template").render(data);
+        $("#gvPhaseAnalysis tr:not(:first)").remove();
+        $("#gvPhaseAnalysis tr:first").after(trs);
+    }
+</script>
+<script id="product_template" type="text/x-jsrender">
+    <tr>
+        <td class="GridNumeric ID_Col">{{>MyID}}</td>
+        <td><a onclick="openDialogWindow('../Reporter/Index?MyID={{>MyID}}', '', '')" href="javascript:;">{{>MyName}} </a></td>
+        <td>{{>WeekYear}}第{{>WeekNum}}周</td>
+        <td>{{>ModifiedBy}}</td>
+        <td>{{>LastModified}}</td>
+
+        <td></td>
+
+    </tr>
+</script>
+<form id="searchForm">
+    <div style="padding: 10px" id="highSearchContent">
+        <span style="padding-left: 20px; padding-top: 15px; font-weight: bold; height: 30px">
+            搜索：
+        </span>
+        <span style="display:inline-block;">
+            <span style="margin-right:10px;">序号:</span>
+            <input type="text" style="margin-right:10px;" name="MyID">
+        </span>
+        <span style="display:inline-block;">
+            <span style="margin-right:10px;">周报名称:</span>
+            <input type="text" style="margin-right:10px;" name="MyName">
+        </span>
+        <span style="display:inline-block;">
+            <span style="margin-right:10px;">修改人:</span>
+            <input type="text" style="margin-right:10px;" name="ModifiedBy">
+            <input type="text" class="display_none" name="Specialty" value="1">
+        </span>
+        <input type="hidden" id="SearchFlag" name="SearchFlag" />
+        <input type="button" class="btn-green" id="btnSearch" value="搜索" name="btnSearch">
+        <input type="button" class="btn-green" id="btnRefresh" value="全部" name="btnRefresh" onclick=" location.replace(location.href)">
+    </div>
+</form>
+<div id="mainTable">
+    <input type="hidden" id="hf" />
+    <div id="Div2" style="margin: 10px;">
+        <span>
+            <input ID="btnCreate" type="button" runat="server" value="新建" class="btn-blue" OnClick="openDialogWindow('../Reporter/Index?MyID=0', '', '')" />
+            <span>
+                <input type="button" ID="btnDelete" runat="server" value="删除" class="btn-blue" />
+            </span>
+            <span>
+                <input type="button" ID="btnOthers"  value="查看其他周报" class="btn-blue" />
+            </span>
+        </span>
+    </div>
+    <table cellspacing="0" style="width:100%;border-collapse:collapse;" id="gvPhaseAnalysis">
+        <tbody>
+            <tr>
+                <th style="width:80px;" scope="col">序号</th>
+                <th style="width:200px;" scope="col">周报名称</th>
+                <th style="width:200px;" scope="col">周报备注</th>
+                <th style="width:200px;" scope="col">修改人</th>
+                <th style="width:200px;" scope="col">修改时间</th>
+                <th style="width:1200px;" scope="col"></th>
+            </tr>
+        </tbody>
+    </table>
+</div>

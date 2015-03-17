@@ -1,0 +1,252 @@
+﻿@{
+    ViewBag.Title = "统计查询";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model KCZYLIMS.Models.UsersMD
+<script src="@Url.Content("~/Scripts/Third/Datepicker/WdatePicker.js")"></script>
+<script type="text/javascript">
+    $(function() {
+
+        $("#gvPhaseAnalysis").wyGrid({
+            allowAjax: true,
+            urlPath: "../PortalAPI/ProjectSearchGetDataSet",
+            pageSize: 5,
+            funcAjaxCallBack: AjaxCallBack,
+            entityName: 0,
+            allowAutoSearch: true,
+            allowSelected: false,
+            searchOption: {
+                formID: "searchForm",
+                searchID: "btnSearch",
+                searchPath: "../PortalAPI/AjaxProjectSearch",
+            }
+        });
+
+        $("#dpSpecialty").change(function() {
+            LoadSpecialty($(this).val());
+        });
+        LoadSpecialty($("#dpSpecialty").val());
+
+        
+        $.ajax({
+            type: "post",
+            async: false, //同步执行
+            url: "@Url.Content("~/PortalAPI/GetDepbyUserID")",
+            data: "userID=@Model.UserID",
+            success: function (json) {
+                ///判断是否为物理检测主任
+                if (json.wljcResult == true) {
+                    $("#dpSpecialty option[value='1']").remove();
+                    $("#dpSpecialty option[value='2']").remove();
+                }
+                ///判断是否为矿产资源主任
+                if (json.gykwxResult == true) {
+                    $("#dpSpecialty option[value='3']").remove();
+                }
+            }
+        });
+
+
+    });
+    function LoadSpecialty(key) {
+        $.ajax({
+            type: 'post',
+            url: "../PortalAPI/GetMyTypeDropDownList", //路径为添加方法
+            data: "key=" + key,
+            success: function (data) //返回的是Json类型的
+            {
+                $("#dpMyType").html(data);
+            }
+        });
+    }
+    function AjaxCallBack(data) {
+        var trs = $("#product_template").render(data);
+        $("#gvPhaseAnalysis tr:not(:first)").remove();
+        $("#gvPhaseAnalysis tr:first").after(trs);
+    }
+    function Type(val, origid) {
+        if (val == "1") {
+            openDialogWindow('../ProcessMineralogy/Index?ItemID=' + origid, '', '','false');
+        }
+        if (val == "2") {
+            openDialogWindow('../ChemicalPhaseAnalysis/Index?ItemID=' + origid, '', '', 'false');
+        }
+        if (val == "3") {
+            openDialogWindow('../PhysicalDetection/Index?ItemID=' + origid, '', '', 'false');
+        }
+    }
+</script>
+<script id="product_template" type="text/x-jsrender">
+    <tr>
+        <td class="GridNumeric ID_Col">{{>MyID}}</td>
+        <td><a onclick="Type('{{>Specialty}}', '{{>OrigID}}')" href="javascript:;">{{>MyName}} </a></td>
+        <td>{{>MyCode}} </td>
+        <td>{{>Principal}}</td>
+        <td>{{>Client}}</td>
+        <td></td>
+
+    </tr>
+</script>
+<form id="searchForm">
+
+    
+    <div class="table-wrapper" style="margin-bottom: 20px;">
+        <table id="page1_block1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+               width="100%">
+            <tbody>
+                <tr>
+                    <td colspan="8" class="TableHeader">
+                        查询条件
+                    </td>
+                </tr>
+                <tr id="Tr7">
+                    <td class="TableLabel Width10" nowrap="">
+                        <span title="" class="TableContent  Red">实验类型</span>
+                    </td>
+                    <td class="TableData Width10">
+                       
+                        <select ID="dpSpecialty" class="TableData Width80" name="Specialty">
+                            <option value="0">请选择</option>
+                            <option value="1">工艺矿物学</option>
+                            <option value="2">化学物相</option>
+                            <option value="3">物理检测</option>
+                        </select>
+                    </td>
+                    <td class="TableLabel Width10  Red">
+                        <span title="">业务类型</span>
+                    </td>
+                    <td class="TableData Width10">
+                        <select ID="dpMyType" runat="server" class="TableData Width80" name="MyType">
+                            @foreach (var item in (List<SelectListItem>)@ViewData["dpMyType"]) { 
+                                <option value="@item.Value">@item.Text</option>
+@*                                <option value="0">院内</option>
+                                <option value="1">院外</option>*@
+                            }
+                        </select>
+                    </td>
+                    <td class="TableLabel Width10" nowrap="">
+                        <span title="" class="TableContent">项目名称</span>
+                    </td>
+                    <td class="TableData Width10">
+                        <input id="Text3" class="InputField Width80" type="text" name="MyName" runat="server" />
+                    </td>
+                    <td class="TableLabel Width10" nowrap="" width="150">
+                        <span title="">参与人</span>
+                    </td>
+                    <td class="TableData Width10">
+                        <input id="Text7" class="InputField Width80" type="text" name="Participants" />
+                        <input id="Participants" type="hidden" name="ParticipantsID" />
+                    </td>
+                </tr>
+                <tr id="Tr1">
+                    <td class="TableLabel Width10" nowrap="">
+                        <span title="" class="TableContent ">开始时间</span>
+                    </td>
+                    <td class="TableData Width10">
+                        <input id="Text4" class="InputField Width80 dateField" type="text" name="BeginDate" onfocus="this.className='InputFocus Width80 dateField'" onblur="this.className='InputField Width80 dateField'" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd'});" />
+                        
+                    </td>
+                    <td class="TableLabel Width10" nowrap="">
+                        <span title="" class="TableContent">委托单位</span>
+                    </td>
+                    <td class="TableData Width10">
+                        <input id="Text1" class="InputField Width80" type="text"  name="Client" />
+                        <input id="ClientID" class="InputField Width80" type="hidden"  name="ClientID" />
+                    </td>
+                    <td class="TableLabel Width10" nowrap="" width="150">
+                        <span title="">项目负责人</span>
+                    </td>
+                    <td class="TableData Width10">
+                        <input id="Text2" class="InputField Width80" type="text" name="Principal" />
+                        <input id="PrincipalID" class="InputField Width80" type="hidden" name="PrincipalID" />
+                    </td>
+                    <td class="TableLabel Width10">
+                        <span title="">项目金额</span>
+                    </td>
+                    <td class="TableData Width10">
+                        <input id="Text5" class="InputField Width80" type="text" name="Amount" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div>
+            <span>
+                <input ID="btnSearch" value="查询" class="btn-blue" type="button" />
+            </span>
+            <span>
+                <input value="清空" class="btn-blue" type="button" onclick=" location.replace(location.href)" />
+                @*<a class="btn-blue" onclick=" location.replace(location.href)">清空</a>*@
+            </span>
+        </div>
+    </div>
+    <input id="SearchFlag" type="hidden" name="SearchFlag" />
+</form>
+<div id="mainTable">
+    <table cellspacing="0" style="width:100%;border-collapse:collapse;" id="gvPhaseAnalysis">
+        <tbody>
+            <tr>
+                <th style="width:80px;" scope="col">序号</th>
+                <th style="width:200px;" scope="col">项目名称</th>
+                <th style="width:200px;" scope="col">项目编号</th>
+                <th style="width:200px;" scope="col">负责人</th>
+                <th style="width:200px;" scope="col">委托单位</th>
+                <th style="width:1200px;" scope="col"></th>
+            </tr>
+        </tbody>
+    </table>
+</div>
+        @*<%-- <div id="navReg">
+                <div class="title">
+                    <a href="#">业务信息查询</a>
+                </div>
+            </div>--%>*@
+
+@*        <asp:HiddenField ID="hf" runat="server" />
+        <div style="margin: 50px 20px;">
+            <div>
+                <div style="overflow-x:scroll; padding: 0;margin: 0;" id="gvSearch_cont">
+                    <table cellspacing="0" style="width: 99%; border-collapse: collapse; table-layout: fixed;" id="gvSearch" class="CRM_TableList">
+                        <tbody>
+                            <tr class="TableHeader TableLine1" id="tableTr">
+                                <th style="width:70px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="0">操作</a></th>
+                                <th style="width:80px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="1">序号</a></th>
+                                <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="2">项目名称</a></th>
+                                <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="3">整体收入</a></th>
+                                <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="4">项目数</a></th>
+                                <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="5">样品数</a></th>
+                                <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="6">相数</a></th>
+                                <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="7">机时</a></th>
+                                <th style="width:600px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="8">&nbsp;</a></th>
+                            </tr>
+                            <tr style="display: table-row;" class="TableLine2">
+                                <td align="center">
+                                    <a title="查看" onclick="openDialogWindow('../ProcessMineralogy/ProcessMineralogy.htm', 1200, 800)" class="ActionA RecordDetail" id="gvSearch_action_1_0" href="javascript:;">&nbsp;</a>
+                                </td>
+                                <td class="GridNumeric ID_Col">1</td>
+                                <td>项目A</td>
+                                <td>300，000</td>
+                                <td>3</td>
+                                <td>8</td>
+                                <td>3</td>
+                                <td>36</td>
+                                <td></td>
+                            </tr>
+                            <tr style="display: table-row;" class="TableLine1">
+                                <td align="center">
+                                    <a title="查看" onclick="openDialogWindow('../ProcessMineralogy/ProcessMineralogy.htm', 1200, 800)" class="ActionA RecordDetail" id="gvSearch_action_1_1" href="javascript:;">&nbsp;</a>
+                                </td>
+                                <td class="GridNumeric ID_Col">2</td>
+                                <td>项目B</td>
+                                <td>20，000</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>2</td>
+                                <td>13</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div style="float: right; margin-right: 15px;" id="gvSearch_Pageing"><table width="400px" cellspacing="0" cellpadding="0" class="page_bar"><tbody><tr><td class="page_bar_bg">第<span class="CurPage">1</span>/<span class="TotalPage">1</span>页<a class="FirstPage" href="#" title="首页"><img src="~/Content/Images/page_bar/first_btn.png"></a> <a class="PrevPage" href="#" title="上一页"><img src="~/Content/Images/page_bar/prev_btn.png"></a> <a class="NextPage" href="#" title="下一页"><img src="~/Content/Images/page_bar/next_btn.png"></a> <a class="LastPage" href="#" title="末页"><img src="~/Content/Images/page_bar/last_btn.png"></a>共2条&nbsp;每页<select style="font-size: 11px;" class="PageSize"><option value="10" selected="selected">10</option><option value="20">20</option><option value="25">25</option><option value="50">50</option><option value="150">150</option></select>条&nbsp;第&nbsp;<input type="text" name="jumpPage" id="jumpPage" style="width: 30px; height: 16px;" class="efViewTextBox" onkeydown="jumpPage(this,event,1);">&nbsp;页<img src="~/Content/Images/page_bar/go_to.png" onclick="gotoViewPage(jQuery(this).parent().find('#jumpPage').val());" title="跳转"></td></tr></tbody></table></div>
+        </div>*@

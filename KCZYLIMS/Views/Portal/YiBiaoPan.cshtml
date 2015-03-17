@@ -1,0 +1,372 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";    
+}
+@model KCZYLIMS.Models.UsersMD
+    <style type="text/css">
+        .mid {
+            overflow: hidden;
+            width: 1020px;
+            margin-right:auto;
+            margin-left:auto;
+        }
+        .mid_1 {
+            float: left;
+            margin-bottom: 0;
+            margin-right: 10px;
+            padding-bottom: 0;
+            width: 450px;
+        }
+        .mid_1_out {
+            float: left;
+            margin: 4px 4px 4px 6px;
+        }
+        .mid_1_in {
+            border-style: solid;
+            border-width: 1px;
+            height: 400px;
+            width: 450px;
+        }
+            .mid_1_in .mid_block {
+                float: left;
+                height: 100%;
+                width: 450px;
+            }
+    </style>
+
+    <!-- ECharts单文件引入 -->
+    <script src="~/Scripts/Third/echarts/js/dist/echarts.js"></script>
+    <script type="text/javascript">
+    // 路径配置
+    require.config({
+        paths: {
+            echarts: "@Url.Content("~/Scripts/Third/echarts/js/dist")"
+        }
+    });
+
+    // 使用
+    require(
+        [
+            'echarts',
+            'echarts/chart/bar' // 使用柱状图就加载bar模块，按需加载
+        ],
+        function (ec) {
+            ///判断是否为物理检测主任
+            $.ajax({
+                type: "post",
+                async: false, //同步执行
+                url: "@Url.Content("~/PortalAPI/GetDepbyUserID")",
+                data: "userID=@Model.UserID",
+                success: function (json) {
+                    if (json.wljcResult != true) {
+
+                        // 基于准备好的dom，初始化echarts图表
+                        var myChart = ec.init(document.getElementById('gykwx_main'));
+                        var option = {
+                            title: {
+                                text: '工艺矿物学',
+                                subtext: '数据直方图'
+                            },
+                            tooltip: {
+                                show: true
+                            },
+                            legend: {
+                                data: ['工艺矿物学']
+                            },
+                            /*                    legend: {
+                                                    data: ['工艺矿物学'],
+                                                    textStyle: {
+                                                        fontSize: 18,
+                                                        color:"auto",
+
+                                                    }
+
+                                                },*/
+                            xAxis: [
+                                {
+                                    type: 'category',
+                                    data: ["项目委托", "项目策划", "实验过程", "项目审批"]
+                                }
+                            ],
+                            yAxis: [
+                                {
+                                    type: 'value',
+                                    color: '#e2c6ac',
+                                    boundaryGap: [0, 0.1]
+                                }
+                            ],
+                            series: [
+                                {
+                                    "name": "统计",
+                                    "type": "bar",
+                                    "data": [5, 20, 40, 10],
+                                    "barWidth": 20,
+                                    itemStyle: {
+                                        normal: {
+                                            color: function (params) {
+                                                // build a color map as your need.
+                                                var colorList = [
+                                                  '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
+                                                   '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
+                                                   '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
+                                                ];
+                                                return colorList[params.dataIndex];
+                                            },
+                                            label: {
+                                                show: true,
+                                                position: 'top',
+                                                formatter: '{c}'
+                                            }
+                                        },
+
+                                    },
+                                }
+                            ]
+                        };
+
+                        // 为echarts对象加载数据
+                        $.ajax({
+                            type: "post",
+                            async: false, //同步执行
+                            url: "@Url.Content("~/PortalAPI/GetChartData")",
+                            data: "key=gykwx",
+                            success: function (json) {
+                                option.series[0].data = json.Data;
+                                myChart.setOption(option);
+                            },
+                        });
+                        var myChart_hxwx = ec.init(document.getElementById('hxwx_main'));
+                        var option = {
+                            title: {
+                                text: '化学物相分析',
+                                subtext: '数据直方图'
+                            },
+                            tooltip: {
+                                show: true
+                            },
+                            legend: {
+                                data: ['化学物相分析']
+                            },
+                            xAxis: [
+                                {
+                                    type: 'category',
+                                    data: ["项目委托", "实验过程", "分析报告"]
+                                }
+                            ],
+                            yAxis: [
+                                {
+                                    type: 'value',
+                                    boundaryGap: [0, 0.1]
+                                }
+                            ],
+                            series: [
+                                {
+                                    "name": "销量",
+                                    "type": "bar",
+                                    "data": [5, 15, 10],
+                                    "barWidth": 20,
+                                    itemStyle: {
+                                        normal: {
+                                            color: function (params) {
+                                                // build a color map as your need.
+                                                var colorList = [
+                                                   '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
+                                                   '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
+                                                   '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
+                                                ];
+                                                return colorList[params.dataIndex];
+                                            },
+                                            label: {
+                                                show: true,
+                                                position: 'top',
+                                                formatter: '{c}'
+                                            }
+                                        },
+
+                                    },
+                                }
+                            ]
+                        };
+                        // 为echarts对象加载数据
+                        // 为echarts对象加载数据
+                        $.ajax({
+                            type: "post",
+                            async: false, //同步执行
+                            url: "@Url.Content("~/PortalAPI/GetChartData")",
+                            data: "key=hxwx",
+                            success: function(json) {
+                                option.series[0].data = json.Data;
+                                myChart_hxwx.setOption(option);
+                            },
+                        });
+                    }
+                    ///判断是否为矿产资源所主任
+                    if (json.gykwxResult != true) {
+
+                        var myChart_wljc = ec.init(document.getElementById('wljc_main'));
+                        var option = {
+                            title: {
+                                text: '物理检测',
+                                subtext: '数据直方图'
+                            },
+                            tooltip: {
+                                show: true
+                            },
+                            legend: {
+                                data: ['物理检测']
+                            },
+                            xAxis: [
+                                {
+                                    type: 'category',
+                                    data: ["项目委托", "实验过程", "登记收费", "分析报告"]
+                                }
+                            ],
+                            yAxis: [
+                                {
+                                    type: 'value',
+                                    boundaryGap: [0, 0.1]
+                                }
+                            ],
+                            series: [
+                                {
+                                    "name": "销量",
+                                    "type": "bar",
+                                    "data": [15, 10, 20],
+                                    "barWidth": 20,
+                                    itemStyle: {
+                                        normal: {
+                                            color: function(params) {
+                                                // build a color map as your need.
+                                                var colorList = [
+                                                    '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
+                                                    '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
+                                                    '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
+                                                ];
+                                                return colorList[params.dataIndex];
+                                            },
+                                            label: {
+                                                show: true,
+                                                position: 'top',
+                                                formatter: '{c}'
+                                            }
+                                        },
+
+                                    },
+                                }
+                            ]
+                        };
+                        // 为echarts对象加载数据
+                        $.ajax({
+                            type: "post",
+                            async: false, //同步执行
+                            url: "@Url.Content("~/PortalAPI/GetChartData")",
+                            data: "key=wljc",
+                            success: function (json) {
+                                option.series[0].data = json.Data;
+                                myChart_wljc.setOption(option);
+                            },
+                        });
+                    }
+                    if (json.gykwxResult == true) {
+                        $("#wljc_div").hide();
+                        $("#gykwx_div").attr("style", "margin: 0 auto;width:80%");
+                        var swidth = $(window).width() * 0.1 ;
+                        $("#gykwx_main").attr("style", "width:30%;height:400px;float:left;margin-right:" + swidth + "px");
+                    }
+                    if (json.wljcResult == true) {
+/*                        $("#gykwx_main").hide();
+                        $("#hxwx_main").hide();*/
+                        $("#gykwx_div").hide();
+                        $("#wljc_div").attr("style", "margin: 0 auto;width:30%");
+                    }
+                },
+            });
+
+
+            var myChart_income = ec.init(document.getElementById('income_main'));
+            var option = {
+                title: {
+                    text: '月度收入',
+                    subtext: '数据直方图'
+                },
+                tooltip: {
+                    show: true
+                },
+                legend: {
+                    data: ['月度收入(万元)']
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        data: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value',
+                        boundaryGap: [0, 0.1]
+                    }
+                ],
+                series: [
+                    {
+                        "name": "销量",
+                        "type": "bar",
+                        "data": [5, 20, 40, 10, 10, 20, 7, 3, 10, 3, 20, 33],
+                        "barWidth": 20,
+                        itemStyle: {
+                            normal: {
+                                color: function (params) {
+                                    // build a color map as your need.
+                                    var colorList = [
+                                      '#C1232B', '#B5C334', '#FCCE10', '#E87C25', '#27727B',
+                                       '#FE8463', '#9BCA63', '#FAD860', '#F3A43B', '#60C0DD',
+                                       '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0'
+                                    ];
+                                    return colorList[params.dataIndex];
+                                },
+                                label: {
+                                    show: true,
+                                    position: 'top',
+                                    formatter: '{c}'
+                                }
+                            },
+
+                        },
+                    }
+                ]
+            };
+            // 为echarts对象加载数据
+            $.ajax({
+                type: "post",
+                async: false, //同步执行
+                url: "@Url.Content("~/PortalAPI/GetChartData")",
+                data: "key=income",
+                success: function (json) {
+                    option.series[0].data = json.Data;
+                    myChart_income.setOption(option);
+                },
+            });
+            var sheight = $(window).height()*0.2;
+            $("#top_div").attr("style", "height:" + sheight + "px");
+            
+
+        }
+    );
+    </script>
+
+
+    
+
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div style="height: 200px;" id="top_div"></div>
+<div style="margin: 0 auto;" id="gykwx_div">
+    <div id="gykwx_main" style="width:30%;height:400px;float:left;" ></div>
+    <div id="hxwx_main" style="width: 30%; height: 400px; float: left; " ></div>
+</div>
+    <div style="margin: 0 auto;" id="wljc_div"><div id="wljc_main" style="width:30%;height:400px;float:left" ></div></div>
+
+    <div style="clear:both"></div>
+
+    <div id="income_main" style="width:90%;height:400px" class="display_none"></div>
+
+
+

@@ -1,0 +1,223 @@
+﻿@{
+    ViewBag.Title = "Registration";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";  
+}
+
+@model KCZYLIMS.Models.kczy_RegistrationMD
+<script type="text/javascript">
+    $(function () {
+        $("#approvelTable").wyGrid({ PageSize: 5, allowDisabledPageSize: true, allowSelected: false });
+        InitButtonInfo('', '../PhysicalDetectionAPI/UpdateRegistration');
+        $("#txtCollecter").click(function () {
+            openDialogWindow("../Selector/UserSelector?ReturnCtrl=hfValue&CallBack=CollecterResponsorSetter()&MultiSelect=false&Type=1", "950", "600", "false");
+        });
+        $('#txtClient').click(function () {
+            openDialogWindow("../Selector/ClientSelector?ReturnCtrl=hfValue&CallBack=PayClientSetter()&MultiSelect=false&Type=1", "950", "600", "false");
+        });
+        $("#approvelTable").hide();
+        $("#appInfo").hide();
+    });
+
+</script>
+<script id="submit_Lists" type="text/x-jsrender">
+    <input type="checkbox" value="{{>UserID}}" checked="checked"/>
+    <label>{{>FullName}}</label>
+
+</script>
+<script id="approve_Lists" type="text/x-jsrender">
+    <tr>
+        <td>{{>UserName}}</td>
+        <td>{{>ResultText}}</td>
+        <td>{{>MyNote}}</td>
+        <td>{{>SubmitDateStr}}</td>
+        <td></td>
+    </tr>
+</script>
+<form id="MainFrm">
+    <div id="tabs" style="margin: auto;">
+        <div id="page1">
+            <div class="table-wrapper">
+                <table id="page1_block1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                       width="100%">
+                    <tbody>
+                        <tr style="display: none;">
+                            <td colspan="4" class="TableHeader">
+                                基本信息
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent  Red">项目名称</span>
+                            </td>
+                            <td class="TableData Width40">
+                                <input id="txtMyID" class="display_none" type="text" value="@Model.MyID" name="MyID" />
+                                <input class="display_none" type="text" value="@Model.ItemID" name="ItemID" />
+                                <input class="display_none" type="text" value="@Model.OrigID" name="OrigID" />
+                                <input id="txtMyName" class="InputField Width80" readonly="readonly" type="text" name="MyName" value="@Model.MyName" />
+                            </td>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent  Red">项目编号</span>
+                            </td>
+                            <td class="TableData Width40">
+                                <input id="txtMyCode" class="InputField Width80" type="text" name="MyCode" value="@Model.MyCode" />
+                            </td>
+                        </tr>
+                        <tr id="page1_block1_row1">
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="截止日期" class="TableContent  ">实验总费用</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input name="TotalCost" id="txtTotalCost" class="InputField Width80 "
+                                       onfocus="this.className='InputFocus Width80 '" onblur="this.className='InputField Width80 '"
+                                       maxlength="100" title="" datatype="text" require="none" value="@Model.TotalCost">
+                                </input>
+                            </td>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent">收款金额</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input name="Amount" id="txtAmount" class="InputField Width80 "
+                                       onfocus="this.className='InputFocus Width80 '" onblur="this.className='InputField Width80 '"
+                                       maxlength="100" title="" datatype="text" require="none" value="@Model.Amount">
+                                </input>
+                            </td>
+                        </tr>
+
+                        <tr id="Tr2">
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="截止日期" class="TableContent  ">付款单位</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input id="txtClientID" class="display_none" type="text" value="@Model.ClientID" name="ClientID" />
+                                <input name="Client" id="txtClient" class="InputField Width80 refField"
+                                       onfocus="this.className='InputFocus Width80 refField'" onblur="this.className='InputField Width80 refField'"
+                                       title="送样单位" datatype="reference" require="must" demand="readOnly" value="@Model.Client"></input>
+                                <a href="javascript:void(0)" id="a1" class="ref-delete-handle inline-block"></a>
+                            </td>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent">课题组</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input id="txtSubClientID" class="display_none" type="text" value="@Model.SubClientID" name="SubClientID" />
+                                <input name="SubClient" id="txtSubClient" class="InputField Width80 refField"
+                                       onfocus="this.className='InputFocus Width80 refField'" onblur="this.className='InputField Width80 refField'"
+                                       title="送样单位" datatype="reference"  value="@Model.SubClient"></input>
+                                <a href="javascript:void(0)" id="a1" class="ref-delete-handle inline-block"></a>
+                            </td>
+                        </tr>
+                        <tr id="page1_block1_row1">
+                            @*                        <td class="TableLabel" nowrap="" width="150">
+                                    <span title="截止日期" class="TableContent ">预付款</span>
+                                </td>
+                                <td class="TableData Width40" colspan="1">
+                                    <input   name="Balance" ID="txtBalance" class="InputField Width80 "
+                                           onfocus="this.className='InputFocus Width80 '" onblur="this.className='InputField Width80 '"
+                                           MaxLength="100" title="" datatype="text" require="none">
+                                    </input>
+                                </td>*@
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent">费用余额</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input name="Balance" id="txtBalance" class="InputField Width80 "
+                                       onfocus="this.className='InputFocus Width80 '" onblur="this.className='InputField Width80 '"
+                                       maxlength="100" title="" datatype="text" require="none" value="@Model.Balance">
+                                </input>
+                            </td>
+                        </tr>
+                        <tr id="page1_block1_row2">
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="" class="TableContent">收款人</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input id="txtCollecterID" name="CollecterID" class="display_none" value="@Model.CollecterID"></input>
+                                <input name="Collecter" id="txtCollecter" class="InputField Width80 refField"
+                                       onfocus="this.className='InputFocus Width80 refField'" onblur="this.className='InputField Width80 refField'"
+                                       require="must" demand="readOnly" value="@Model.Collecter"></input>
+                                <a href="javascript:void(0)" id="a2" class="ref-delete-handle inline-block"></a>
+                            </td>
+                            <td class="TableLabel" nowrap="" width="150">
+                                <span title="截止日期" class="TableContent  ">收款日期</span>
+                            </td>
+                            <td class="TableData Width40" colspan="1">
+                                <input id="txtCollectDate" class="InputField Width80 dateField"
+                                       onfocus="this.className='InputFocus Width80 dateField'" onblur="this.className='InputField Width80 dateField'"
+                                       onclick="WdatePicker({dateFmt:'yyyy-MM-dd',maxDate:'%y-%M-%d'});" name="CollectDate" value="@Model.CollectDate.ToString("yyyy-MM-dd")"/>
+                                
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table id="Table5" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="TableHeader">
+                            记录信息
+                        </td>
+                    </tr>
+                    <tr id="Tr14">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">创建人</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input class="display_none" value="@Model.CreatorID" name="CreatorID"></input>
+                            <input id="txtCreateBy" title="创建人" class="InputField Width90 InputReadonly"
+                                   maxlength="100" datatype="text" readonly="True" value="@Model.CreateBy" name="CreateBy"></input>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">创建时间</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtCreatDate" title="创建时间" class="InputField Width80 InputReadonly"
+                                   maxlength="100" datatype="datetime" readonly="True" value="@Model.CreateDate" name="CreateDate"></input>
+                        </td>
+                    </tr>
+                    <tr id="Tr15">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">最后修改人</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input class="display_none" value="@Model.ModifierID"></input>
+                            <input id="txtModifiedBy" title="最后修改人"
+                                   class="InputField Width90 InputReadonly" maxlength="100" datatype="datetime"
+                                   readonly="True" value="@Model.ModifiedBy"></input>
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  ">最后修改时间</span>
+                        </td>
+                        <td class="TableData Width40" colspan="1">
+                            <input id="txtLastModified" title="最后修改时间"
+                                   class="InputField Width80 InputReadonly" maxlength="100" datatype="datetime"
+                                   readonly="True" value="@Model.LastModified"></input>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <center>
+        <div id="appInfo" style="display: none;"><span style="margin-left: 10px;">意见:</span><input id="ApproveMyNote" class="" type="text" style="width: 300px;"></input><span id="approveUsers" style="margin-left: 30px;">下一级审批人：</span></div>
+    </center>
+    <table style="margin: 5px 0" width="100%">
+        <tbody>
+            <tr align="center">
+                <td id="tdCteat">
+                    <input value="保存" class="btn-blue" type="button" id="btnSave" />
+                </td>
+                <td id="tdEdit" style="display: none;">
+                    <input value="保存" class="btn-blue" type="button" id="btnEdit" />
+                    <input value="完成" class="btn-blue" type="button" id="submit" />
+                </td>
+                <td id="tdApprove" style="display: none;">
+                    <input value="同意" class="btn-blue" type="button" id="btnApprove" />
+                    <input value="驳回" class="btn-blue" type="button" id="btnReject" />
+
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</form>

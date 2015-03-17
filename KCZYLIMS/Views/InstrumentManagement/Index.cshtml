@@ -1,0 +1,187 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+@model KCZYLIMS.Models.kczy_InstrumentBaseInfoMD
+<script>
+    $(function() {
+        var itemid = getUrlQueryString('ItemID');
+        var path = "";
+        if (itemid == "0") {
+            path = '../InstrumentManagementAPI/CreateInstrumentManagement';
+            $("#div_Lists").hide();
+        } else {
+            path = '../InstrumentManagementAPI/UpdateInstrumentManagement';
+            SetUrl(++itemid,$("#txtMyName").val(), $("#txtMyCode").val());
+        }
+        $("#btnSave").click(function() {
+            //alert($('#MainFrm').serialize());
+            if (checkForm()) {
+            $.ajax({
+                type: 'post',
+                url: path, //路径为添加方法
+                data: $('#MainFrm').serialize(), //参数的个数和名字要和方法的名字保持一致
+                success: function(json) //返回的是Json类型的
+                {
+                    if (json.Result == true) {
+                        parent.parent.layer.alert('保存成功', 1);
+                        var search = window.location.search;
+                        if (search == "") { //新建
+                            window.location.href = window.location.href +  "?ItemID=" + json.Data.OrigID;
+                        } else {//编辑
+                            window.location.href = window.location.href.replace(search,"?ItemID=" + json.Data.OrigID);
+                        }
+                        
+                    }
+                }
+            });
+            }
+            });
+    });
+    function SetUrl(id,para,codepara) {
+        $.ajax({
+            type: 'post',
+            url: '../XHttp/SetUrlQueryParam', //路径为添加方法
+            data: 'name=' + para + '&code=' + codepara, //参数的个数和名字要和方法的名字保持一致
+            success: function(json) //返回的是Json类型的
+            {
+                if (json.Result == true) {
+                    var name = json.Name;
+                    var code = json.Code;
+                    $("#AppointmentIframe").attr("src", "InstrumentAppointmentLists?ItemID=" + (++id) + "&Name=" + name + "&Code=" +code);
+                    $("#UsageIframe").attr("src", "InstrumentUsageRecordLists?ItemID=" + (++id) + "&Name=" + name + "&Code=" + code);
+                    $("#ServiceIframe").attr("src", "InstrumentServiceLists?ItemID=" + (++id) + "&Name=" + name + "&Code=" + code);
+
+                }
+            }
+        });
+    };
+    function OperaterResponsorSetter() {
+        var strRetValue = $('#hfValue').val();
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 3) {
+                window.parent.$('.xubox_iframe:eq(1)').contents().find('#txtOperater').val(words[2]);
+                window.parent.$('.xubox_iframe:eq(1)').contents().find('#txtOperaterID').val(words[0]);
+            }
+        }
+        window.parent.$('.xubox_close')[2].click();
+    }
+</script>
+<form id="MainFrm">
+    <input type="hidden" id="hfValue" name="hfValue" />
+    <div>
+        <div id="navReg">
+            <div class="title">
+                <a href="#">仪器信息详细界面</a>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table id="page1_block1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="TableHeader">
+                            基本信息
+                        </td>
+                    </tr>
+                    <tr id="Tr7">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  Red">仪器名称</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtMyID" class="display_none" type="text" value="@Model.MyID" name="MyID" />
+                            <input class="display_none" type="text" value="@Model.ItemID" name="ItemID" />
+                            <input class="display_none" type="text" value="@Model.OrigID" name="OrigID" />
+                            <input id="txtMyName" class="InputField Width80" type="text" name="MyName" value="@Model.MyName" require="must" />
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent  Red">仪器编号</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtMyCode" class="InputField Width80" type="text" name="MyCode" value="@Model.MyCode" require="must" />
+                        </td>
+                    </tr>
+                    <tr id="Tr2">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="">仪器型号</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtModel" class="InputField Width80" type="text" name="Type" value="@Model.Type" />
+                        </td>
+                    </tr>
+                    <tr id="Tr1">
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="备注" class="TableContent  ">备注</span>
+                            <input class="display_none" value="@Model.CreatorID" name="CreatorID"></input>
+                            <input id="txtCreateBy" title="创建人" class="display_none" value="@Model.CreateBy" name="CreateBy"></input>
+                            <input id="txtCreatDate" title="创建时间" class="display_none" value="@Model.CreateDate" name="CreateDate"></input>
+                        </td>
+                        <td class="TableData Width90" colspan="3">
+                            <textarea textmode="MultiLine" rows="5" name="Remark" id="txtRemark"
+                                      class="InputField Width90 " onfocus="this.className='InputFocus Width90 '" onblur="this.className='InputField Width90 '" title="" datatype="textarea" field_control="" field_control_ze="" require="none">@Model.Remark</textarea>
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <center>
+            <table style="margin: 5px 0">
+                <tbody>
+                    <tr align="center">
+                        <td id="tdCteat">
+                            <input value="保存" class="btn-blue" type="button" id="btnSave" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </center>
+        <div id="div_Lists">
+            <div class="table-wrapper">
+                <table id="Table3" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                       width="100%">
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="TableHeader">
+                                仪器预约记录
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <iframe width="99%" allowtransparency="yes" frameborder="0" type="reference" id="AppointmentIframe"
+                        src="InstrumentAppointmentLists?ItemID=0" height="250px"></iframe>
+            </div>
+            <div class="table-wrapper">
+                <table id="Table1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                       width="100%">
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="TableHeader">
+                                仪器使用记录
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <iframe width="99%" allowtransparency="yes" frameborder="0" type="reference" id="UsageIframe"
+                        src="InstrumentUsageRecordLists?ItemID=0" height="250px"></iframe>
+            </div>
+            <div class="table-wrapper">
+                <table id="Table2" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                       width="100%">
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="TableHeader">
+                                仪器检修记录
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <iframe width="99%" allowtransparency="yes" frameborder="0" type="reference" id="ServiceIframe"
+                        src="InstrumentServiceLists?ItemID=0" height="250px"></iframe>
+            </div>
+        </div>
+    </div>
+</form>

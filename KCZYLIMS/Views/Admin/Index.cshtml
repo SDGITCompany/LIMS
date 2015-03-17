@@ -1,0 +1,101 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+
+    <link href="@Url.Content("~/Scripts/KendoUI/styles/kendo.common.min.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Scripts/KendoUI/styles/kendo.rtl.min.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Scripts/KendoUI/styles/kendo.dataviz.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Scripts/KendoUI/styles/kendo.default.min.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Scripts/KendoUI/styles/kendo.dataviz.default.min.css")" rel="stylesheet" />
+
+    <link rel="stylesheet" href="../../css/zTreeStyle/zTreeStyle.css" type="text/css">
+
+    <script src="@Url.Content("~/Scripts/jquery.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/KendoUI/js/kendo.all.min.js")"></script>
+
+    <script type="text/javascript" src="@Url.Content("~/Scripts/Third/zTree_v3/js/jquery.ztree.core-3.5.js")"></script>
+
+
+    <script>
+        $(document).ready(function () {
+            $("#treeview").kendoTreeView();
+        });
+    </script>
+
+    <style>
+        .demo-section {
+            width: 200px;
+        }
+
+        #treeview .k-sprite {
+            background-image: url("../content/web/treeview/coloricons-sprite.png");
+        }
+
+        .rootfolder {
+            background-position: 0 0;
+        }
+
+        .folder {
+            background-position: 0 -16px;
+        }
+
+        .pdf {
+            background-position: 0 -32px;
+        }
+
+        .html {
+            background-position: 0 -48px;
+        }
+
+        .image {
+            background-position: 0 -64px;
+        }
+    </style>
+</head>
+<body>
+    <div id="example">
+        <div class="demo-section k-header">
+            <ul id="treeview">
+                <li data-expanded="true">
+                    <span class="k-sprite folder"></span>
+                    My Web Site
+                    <ul>
+                        <li data-expanded="true">
+                            <span class="k-sprite folder"></span>images
+                            <ul>
+                                <li>logo.png</li>
+                                <li>body-back.png</li>
+                                <li>my-photo.jpg</li>
+                            </ul>
+                        </li>
+                        <li data-expanded="true">
+                            <span class="k-sprite folder"></span>resources
+                            <ul>
+                                <li data-expanded="true">
+                                    <span class="k-sprite folder"></span>pdf
+                                    <ul>
+                                        <li>brochure.pdf</li>
+                                        <li>prices.pdf</li>
+                                    </ul>
+                                </li>
+                                <li>zip</li>
+                            </ul>
+                        </li>
+                        <li>about.html</li>
+                        <li>contacts.html</li>
+                        <li>index.html</li>
+                        <li>portfolio.html</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

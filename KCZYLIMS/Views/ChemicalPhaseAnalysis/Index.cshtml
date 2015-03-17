@@ -1,0 +1,357 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = null;
+}
+@model KCZYLIMS.Models.kczy_ProjectAttorneyMD
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Scripts/KendoUI/styles/kendo.common.min.css" rel="stylesheet" />
+<link href="~/Scripts/kendoUI/styles/kendo.default.min.css" rel="stylesheet" type="text/css" />
+<link href="~/Scripts/kendoUI/styles/kendo.dataviz.min.css" rel="stylesheet" type="text/css" />
+<link href="~/Scripts/kendoUI/styles/kendo.dataviz.default.min.css" rel="stylesheet" type="text/css" />
+<script src="~/Scripts/jquery-1.7.1.min.js"></script>
+<script src="~/Scripts/xPlugin/jquery.wyGrid.js"></script>
+<script src="~/Scripts/XGrid/Common.js"></script>
+<script src="~/Scripts/kendoUI/js/jquery.min.js" type="text/javascript"></script>
+<script src="~/Scripts/kendoUI/js/kendo.all.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+
+        /*   $("div[class=App_TableBlock]").hide();
+        $("div[class=App_TableBlock]:first").show();*/
+        $("div[class=App_TableBlock]").parent().find("table").bind("click",
+            function () {
+                /*$("div[class=App_TableBlock]").hide();*/
+                $(this).parent().find("div[class=App_TableBlock]").toggle();
+
+            });
+        var type = getUrlQueryString('Type');
+        var itemid = getUrlQueryString('ItemID');
+        if (type == 'InSide') {
+            $("#orientation").kendoDropDownList({
+                dataTextField: "text",
+                dataValueField: "value",
+                value: "@Model.MyType",
+                enable: getUrlQueryString('ItemID') == 0,
+                dataSource: [{ text: "院内", value: "1" }, { text: "所内", value: "2" }],
+                select: onSelect
+            });
+            InitIframe(itemid, "ProjectAttorneyForYuanInside?ItemID=0");
+        } else if (type == 'OutSide') {
+            $("#orientation").kendoDropDownList({
+                dataTextField: "text",
+                dataValueField: "value",
+                value: "@Model.MyType",
+                enable: false,
+                dataSource: [{ text: "院外", value: "0" }],
+                select: onSelect
+            });
+            InitIframe(itemid, "ProjectAttorneyinternalPage?ItemID=0");
+        } else if (type == null) {                   //读取
+            $("#orientation").kendoDropDownList({
+                dataTextField: "text",
+                dataValueField: "value",
+                value: "@Model.MyType",
+                enable: getUrlQueryString('ItemID') == 0,
+                dataSource: [{ text: "院外", value: "0" }, { text: "院内", value: "1" }, { text: "所内", value: "2" }],
+                select: onSelect
+            });
+            InitIframe(itemid, "ProjectAttorneyinternalPage?ItemID=0");
+        }
+        function onSelect(e) {
+            var dataItem = this.dataItem(e.item.index());
+            var value = dataItem.value;
+            SetIframe(value, "0", "");
+        }
+
+        $(".k-dropdown-wrap").attr("style", "background-color:white;");
+        $(".k-widget").attr("style", "width:150px;font-size:11pt;");
+        if ("@Model.MyType" == "0") {
+            $("#divProjectAttorney").attr("FormID", 21);
+        } else {
+            $("#divProjectAttorney").attr("FormID", 50);
+        }
+    });
+    function InitIframe(itemId, url) {
+        if (itemId == "0") {
+            $("#IFattorney").attr("src", url);
+
+        } else {
+            GetItemInfo(itemId);
+        }
+    }
+    function SetIframe(value, itemId, status) {
+        if (value == "0") {
+            $("#IFattorney").attr("src", "ProjectAttorneyinternalPage?ItemID=" + itemId + "&Status=" + status);
+            $("#IFattorney").height("850px");
+            $("#divProjectAttorney").attr("FormID", 21);
+            $("#divExperimentRecords").attr("FormID", 23);
+            $("#divAnalysisReport").attr("FormID", 25);
+        } else if (value == "1") {
+            $("#IFattorney").attr("src", "ProjectAttorneyForYuanInside?ItemID=" + itemId + "&Status=" + status);
+            $("#IFattorney").height("580px");
+            $("#divProjectAttorney").attr("FormID", 50);
+            $("#divExperimentRecords").attr("FormID", 52);
+            $("#divAnalysisReport").attr("FormID", 54);
+        } else if (value == "2") {
+            $("#IFattorney").attr("src", "ProjectAttorneyForSuo?ItemID=" + itemId + "&Status=" + status);
+            $("#IFattorney").height("580px");
+            $("#divProjectAttorney").attr("FormID", 50);
+            $("#divExperimentRecords").attr("FormID", 52);
+            $("#divAnalysisReport").attr("FormID", 54);
+        }
+    };
+    function flowOver() {
+        $(this).css("color", "black");
+    }
+    function flowOut() {
+        $(this).css("color", "white");
+    }
+    function flowClick() {
+        var id = $(this).attr("id");
+        if (id == 's1') {
+            location.hash = '#t1';
+            $("div[class=App_TableBlock]").hide();
+            $("#t1").next().find(".App_TableBlock:not(:first)").show();
+        } else if (id == 's2') {
+            location.hash = '#t2';
+            $("div[class=App_TableBlock]").hide();
+            $("#t2").next().find(".App_TableBlock:not(:first)").show();
+        } else if (id == 's3') {
+            location.hash = '#t3';
+            $("div[class=App_TableBlock]").hide();
+            $("#t3").next().find(".App_TableBlock:not(:first)").show();
+        }
+    }
+    function GetItemInfo(val) {
+        $.ajax({
+            type: 'post',
+            url: '/CommonSvr/ViewState', //路径为添加方法
+            data: { intOrigID: val }, //参数的个数和名字要和方法的名字保持一致
+            success: function (json) //返回的是Json类型的
+            {
+                if (json.Result == true) {
+                    if (json.Items.length <= 0) {
+                        return;
+                    }
+                    for (var i = 0; i < json.Items.length; i++) {
+                        var formId = json.Items[i].FormID;
+                        var itemId = json.Items[i].ItemID;
+                        var status = json.Status;
+                        if (json.IsActiveUser == false) {
+                            status = "CompletedStatus";
+                        }
+                        if (formId == $("#divProjectAttorney").attr("FormID")) {                             //项目委托
+                            $("#divProjectAttorney").attr("ItemID", itemId);
+                            var status = json.Status;
+                            if (json.IsActiveUser == false) {
+                                status = "CompletedStatus";
+                            }
+                            SetIframe("@Model.MyType", itemId, status);
+                            $("#s1").addClass("Current_Flow").bind("click", flowClick).bind("mouseover", flowOver).bind("mouseout", flowOut);
+
+                        }
+                        if (formId == $("#divExperimentRecords").attr("FormID")) {                            //实验原始记录
+                            $("#divExperimentRecords").attr("ItemID", itemId);
+                            $("#divExperimentRecords").show();
+                            $("#IFExperimentRecords").attr("src", "ExperimentRecords?ItemID=" + itemId + "&Status=" + status);
+                            SetIframe("@Model.MyType",  $("#divProjectAttorney").attr("ItemID"), "CompletedStatus");
+                            $("#s1").removeClass("Current_Flow").addClass("Completed_Flow");
+                            $("#s2").removeClass("UnDone_Flow").addClass("Current_Flow").bind("click", flowClick).bind("mouseover", flowOver).bind("mouseout", flowOut);
+                        }
+                        if (formId == $("#divAnalysisReport").attr("FormID")) {                            //分析报告
+                            $("#divAnalysisReport").attr("ItemID", itemId);
+                            $("#divExperimentRecords,#divAnalysisReport").show();
+                            $("#IFExperimentRecords").attr("src", "ExperimentRecords?ItemID=" + $("#divExperimentRecords").attr("ItemID") + "&Status=CompletedStatus");
+                            SetIframe("@Model.MyType", $("#divProjectAttorney").attr("ItemID"), "CompletedStatus");
+                            if ($("#divAnalysisReport").attr("FormID") == "54") {
+                                $("#IfAnalysisReport").attr("src", "AnalysisReport?ItemID=" + itemId + "&Status=" + status + "&Type=Inside");
+                            } else if ($("#divAnalysisReport").attr("FormID") == "25") {
+                                $("#IfAnalysisReport").attr("src", "AnalysisReport?ItemID=" + itemId + "&Status=" + status + "&Type=Outside");
+                            }
+                            
+                            $("#s2").removeClass("Current_Flow").addClass("Completed_Flow");
+                            $("#s3").removeClass("UnDone_Flow").addClass("Current_Flow").bind("click", flowClick).bind("mouseover", flowOver).bind("mouseout", flowOut);
+                            if (json.Status == "CompletedStatus") {
+                                $("#s3").removeClass("Current_Flow").addClass("Completed_Flow");
+                            }
+                        }
+                    }
+                    var activeItem = json.ActiveItem;
+                    //console.log(activeItem);
+                    if (activeItem != "0") {
+                        $("div[class=App_TableBlock]").hide();
+                        $("div[itemid='" + activeItem + "'] .App_TableBlock:not(:first)").show();
+                    }
+                }
+            }
+        });
+    };
+    function ResponsorSetter() {
+        var strRetValue = $('#hfValue').val();
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 3) {
+                $('#IFattorney').contents().find('#txtPrincipal').val(words[2]);
+                $('#IFattorney').contents().find('#txtPrincipalID').val(words[0]);
+            }
+        }
+        window.parent.$('.xubox_close')[1].click();
+    }
+    //所内送样人
+    function ResponsorSamplerForSuoSetter() {
+        var strRetValue = $('#hfValue').val();
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 3) {
+                $('#IFattorney').contents().find('#txtSampler').val(words[2]);
+                $('#IFattorney').contents().find('#txtSamplerID').val(words[0]);
+            }
+        }
+        window.parent.$('.xubox_close')[1].click();
+    }
+    function RecipientsResponsorSetter() {
+        var strRetValue = $('#hfValue').val();
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 3) {
+                $('#IFattorney').contents().find('#txtRecipients').val(words[2]);
+                $('#IFattorney').contents().find('#txtRecipientID').val(words[0]);
+            }
+        }
+        window.parent.$('.xubox_close')[1].click();
+    }
+
+    function AnalystResponsorSetter() {
+        var strRetValue = $('#hfValue').val();
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 3) {
+                $('#IFExperimentRecords').contents().find('#txtAnalyst').val(words[2]);
+                $('#IFExperimentRecords').contents().find('#txtAnalystID').val(words[0]);
+            }
+        }
+        window.parent.$('.xubox_close')[1].click();
+    }
+    /*----客户选择器----*/
+    function ClientSetter() {
+        var strRetValue = $('#hfValue').val();
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 7) {
+                $('#IFattorney').contents().find('#txtClient').val(words[1]);
+                $('#IFattorney').contents().find('#txtClientID').val(words[0]);
+                $('#IFattorney').contents().find('#txtSampler').val(words[2]);
+                $('#IFattorney').contents().find('#txtTelephone').val(words[3]);
+                $('#IFattorney').contents().find('#txtFax').val(words[4]);
+                $('#IFattorney').contents().find('#txtPostcode').val(words[5]);
+                $('#IFattorney').contents().find('#txtAddress').val(words[6]);
+            }
+        }
+        window.parent.$('.xubox_close')[1].click();
+    }
+    function ParentClientSetter() {
+        var strRetValue = $('#hfValue').val();
+        //alert(strRetValue);
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 7) {
+                window.parent.$('.xubox_iframe:eq(1)').contents().find('#txtParentName').val(words[1]);
+                window.parent.$('.xubox_iframe:eq(1)').contents().find('#txtParentID').val(words[0]);
+            }
+        }
+        window.parent.$('.xubox_close')[2].click();
+    }
+    //选择器
+    function InstrumentResponsorSetter() {
+        var strRetValue = $('#hfValue').val();
+        var strUserArr = strRetValue.split('#');
+        for (var i = 0; i < strUserArr.length; i++) {
+            var words = strUserArr[i].split(';');
+            if (words != null && words.length == 4) {
+                //word[0]:id;1:itemID;2:name
+               // window.parent.$('.xubox_iframe:eq(1)').contents().find('#txtMyName').val(words[2]);
+                /*                window.parent.$('.xubox_iframe:eq(1)').contents().find('#txtOperaterID').val(words[0]);*/
+                $('#IFExperimentRecords').contents().find('#txtInstrumentName').val(words[2]);
+                $('#IFExperimentRecords').contents().find('#txtInstrumentCode').val(words[3]);
+            }
+        }
+        window.parent.$('.xubox_close')[1].click();
+
+    }
+</script>
+<input type="hidden" id="hfValue" name="hfValue" />
+<div id="tabs" style="margin: auto;">
+    <div id="navReg" style="position: fixed; height: 40px; line-height: 40px; background: #eeeeee;width: 100%; top:0;left:0;">
+        <div class="title">
+            <a href="#">化学物相分析>></a>
+            <ul id="ulType" style="width: 200px; position: absolute; left: 11%; top: -140%; list-style-type: none;">
+                <li>
+                    <input id="orientation" name="orientation" />
+                </li>
+            </ul>
+        </div>
+        <div style="position: absolute; top: 0.6%; left: 35%; font-size: 12pt;width:60%">
+            <span class="Normal_Flow Current_Flow" id="s1">分析测试委托单</span><span class="Normal_Flow UnDone_Flow" id="s2">实验原始记录</span><span class="Normal_Flow UnDone_Flow" id="s3">分析报告</span></div>
+    </div>
+    <div id="stage-1" class="stage">
+        <div id="t1" style="height: 40px; line-height: 40px;background-color:white;"></div>
+        <div class="table-wrapper" id="divProjectAttorney" Formid="21">
+            <table id="Table2" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="TableHeader">
+                            分析测试委托单
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="App_TableBlock" id="m1">
+                <iframe  width="99%" allowtransparency="yes" frameborder="0"
+                        height="750px" id="IFattorney"></iframe>
+            </div>
+        </div>
+        <div id="t2" style="height: 40px; line-height: 40px;background-color:white;"></div>
+        <div class="table-wrapper" id="divExperimentRecords" Formid="23" style="display: none;">
+            <table id="Table4" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="TableHeader">
+                            <a class="alink">实验原始记录</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="App_TableBlock" id="m2">
+                <iframe width="99%" allowtransparency="yes" frameborder="0" height="400px" id="IFExperimentRecords"></iframe>
+            </div>
+        </div>
+        <div id="t3" style="height: 40px; line-height: 40px; background-color: white;"></div>
+        <div class="table-wrapper" id="divAnalysisReport" Formid="25" style="display: none;">
+            <table id="Table3" class="App_TableBlock" align="center" border="0" cellspacing="0"
+                   width="100%">
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="TableHeader" style="color: #383838; cursor: pointer;">
+                            <a class="alink" id="AnalysisReport" style="color: #383838; cursor: pointer;">分析报告</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="App_TableBlock" id="m4">
+                <iframe  width="99%" allowtransparency="yes" frameborder="0" height="400px" id="IfAnalysisReport"></iframe>
+            </div>
+        </div>
+    </div>
+</div>

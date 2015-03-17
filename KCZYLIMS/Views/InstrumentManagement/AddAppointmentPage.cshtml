@@ -1,0 +1,303 @@
+﻿@{
+    ViewBag.Title = "AddAppointmentPage";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+@model KCZYLIMS.Models.kczy_InstrumentAppointmentMD
+<style>
+    .kexuan {
+        background-color: #51a0ed !important;
+        border-color: white !important;
+        height: 59px;
+        top: 0;
+        color: white !important;
+        margin: 5px;
+    }
+
+    .yixuan {
+        background-color: #f8a398 !important;
+        border-color: white !important;
+        height: 59px;
+        top: 0;
+        color: black !important;
+    }
+</style>
+<script>
+    $(function () {
+        if (getUrlQueryString('Name') != null & getUrlQueryString('Code') != null) {
+            LoadUrl(getUrlQueryString('Name'), getUrlQueryString('Code'));
+        }
+        if ($("#txtAppointDate").val() != null && $("#txtMyName").val() != null) {
+            pickedFunc();
+        }
+
+        var path = "";
+        if ("@Model.MyName" == "") {
+            path = '../InstrumentManagementAPI/CreateInstrumentAppointment';
+            $("#div_Lists").hide();
+        } else {
+            path = '../InstrumentManagementAPI/UpdateInstrumentAppointment';
+
+        }
+        $("#ddlAppointType").get(0).options["@Model.AppointType"].selected = true;
+        var itemID = getUrlQueryString('ItemID');
+        $("#btnSave").click(function () {
+            if (checkForm()) {
+                var val = getUrlQueryString('ItemID');
+                // var ss = $.param(val);
+                $.ajax({
+                    type: 'post',
+                    url: path, //路径为添加方法
+                    /*data: "{ 'model': " + $('#MainFrm').serialize() + ", 'sitemid': " + val + " }", //参数的个数和名字要和方法的名字保持一致*/
+                    data: $('#MainFrm').serialize() + "&sitemid=" + val,
+                    success: function (json) //返回的是Json类型的
+                    {
+                        if (json.Result == true) {
+                            parent.parent.layer.msg('保存成功', 2, 1);
+
+                            //确定回传函数
+
+                            if (val == 0) {
+                                var retVal = $("#txtAppointDate").val() + $("#ddlAppointType").find("option:selected").text();
+                                retVal += "#" + json.Data.MyID;
+                                var returnCtrl = getUrlQueryString('ReturnCtrl');
+                                var callBack = getUrlQueryString('CallBack');
+                                window.parent[0].$('#' + returnCtrl).val(retVal);
+                                eval("window.parent[0]." + callBack);
+                            }
+                            window.parent.$('.xubox_close')[1].click();
+                        } else {
+                            parent.parent.layer.alert(json.Error, 3);
+                        }
+
+                    }
+                });
+            }
+            // window.parent.$('.xubox_close')[1].click();
+        });
+
+        $("#txtOperater").click(function () {
+            openDialogWindow("../Selector/UserSelector?ReturnCtrl=hfValue&CallBack=OperaterResponsorSetter()&MultiSelect=false&Type=1", "950", "600", "false");
+        });
+        
+        if (itemID == 0) {
+            $("#txtMyName").click(function () {
+                openDialogWindow("../Selector/InstrumentSelector?ReturnCtrl=hfValue&CallBack=InstrumentResponsorSetter()&MultiSelect=false&Type=1&itemID=" + itemID, "850", "500", "false");
+            });
+            $("#txtMyName").addClass("refField");
+        }
+
+    });
+    function LoadUrl(para, codepara) {
+        $.ajax({
+            type: 'post',
+            url: '/XHttp/LoadUrlQueryParam', //路径为添加方法
+            data: 'name=' + para + '&code=' + codepara, //参数的个数和名字要和方法的名字保持一致
+            async: false,
+            success: function (json) //返回的是Json类型的
+            {
+                if (json.Result == true) {
+                    $("#txtMyName").val(json.Name);
+                    $("#txtMyCode").val(json.Code);
+
+                }
+            }
+        });
+    };
+    function pickedFunc() {
+        LoadDateList($("#txtAppointDate").val(), $("#txtMyName").val());
+    }
+    function LoadDateList(curDate, curName) {
+        $.ajax({
+            type: 'post',
+            url: '/XHttp/LoadDateQueryParam', //路径为添加方法
+            data: 'date=' + curDate + '&name=' + curName, //参数的个数和名字要和方法的名字保持一致
+            success: function (json) //返回的是Json类型的
+            {
+                if (json.Result == true) {
+                    var data = json.Data;
+                    for (var i = 0; i < 7; i++) {
+                        $("#gvService th:eq(" + i + ")").text(data[i * 2 + 1].Date);
+                        for (var j = 0; j < 2; j++) {
+                            var obj = $("#gvService tr:eq(" + (j + 1) + ") td:eq(" + i + ")");
+                            var notCheck = data[i * 2 + j].NotCheck;
+                            var noCheckTxt = "已选";
+                            var noCheckClass = "yixuan";
+                            if (notCheck) {
+                                noCheckTxt = "可选";
+                                noCheckClass = "kexuan";
+                            }
+                            obj.attr("class", noCheckClass);
+                            obj.find("span").text(noCheckTxt);
+
+
+                        }
+                    }
+
+                }
+            }
+        });
+    }
+
+</script>
+<form id="MainFrm">
+    <input type="hidden" id="hfValue" name="hfValue" />
+    <div id="navReg">
+        <div class="title">
+            <a href="#">仪器预约</a>
+        </div>
+    </div>
+    <div class="table-wrapper">
+        <table id="Table1" class="App_TableBlock" align="center" border="0" cellspacing="0"
+               width="100%">
+            <tbody>
+                <tr>
+                    <td colspan="4" class="TableHeader">
+                        基本信息
+                    </td>
+                </tr>
+                <tr id="Tr4">
+                    <td class="TableLabel" nowrap="" width="150">
+                        <span title="" class="TableContent ">仪器名称</span>
+                    </td>
+                    <td class="TableData Width40">
+                        <input id="txtMyID" class="display_none" type="text" value="@Model.MyID" name="MyID" />
+                        <input class="display_none" type="text" value="@Model.ItemID" name="ItemID" />
+                        <input class="display_none" type="text" value="@Model.OrigID" name="OrigID" />
+                        <input id="txtMyName" class="InputField Width80" type="text" name="MyName" value="@Model.MyName" require="must" />
+                        @*                        <a href="javascript:" id="A3"   class="ref-delete-handle inline-block">
+                            </a>*@
+                    </td>
+                    <td class="TableLabel" nowrap="" width="150">
+                        <span title="" class="TableContent ">仪器编号</span>
+                    </td>
+                    <td class="TableData Width40">
+                        <input id="txtMyCode" class="InputField Width80" type="text" name="MyCode" value="@Model.MyCode" require="must" />
+                    </td>
+                </tr>
+                <tr id="Tr8">
+                    <td class="TableLabel" nowrap="" width="150">
+                        <span title="" class="TableContent ">预约日期</span>
+                    </td>
+                    <td class="TableData Width40">
+                        <input id="txtAppointDate" class="InputField Width80 dateField"
+                               onfocus="this.className='InputFocus Width80 dateField'" onblur="this.className='InputField Width80 dateField'"
+                               onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', minDate: '%y-%M-%d', onpicked: pickedFunc });" title="完成日期"
+                               readonly="readonly" name="AppointDate" value="@Model.AppointDate.ToString("yyyy-MM-dd")">
+                        </input>
+                    </td>
+                    <td class="TableLabel" nowrap="" width="150">
+                        <span title="" class="TableContent ">使用人</span>
+                    </td>
+                    <td class="TableData Width40">
+                        <input id="txtOperaterID" class="display_none" type="text" value="@Model.OperaterID" name="OperaterID" />
+                        <input id="txtOperater" class="InputField Width80 refField" type="text" name="Operater" value="@Model.Operater" readonly="readonly" />
+                        <a href="javascript:void(0)" id="a2" class="ref-delete-handle inline-block"></a>
+                    </td>
+                </tr>
+                <tr id="Tr9">
+                    <td class="TableLabel" nowrap="" width="150">
+                        <span title="" class="TableContent ">预约时间</span>
+                    </td>
+                    <td class="TableData Width40">
+                        <span>
+                            <select name="AppointType" id="ddlAppointType" class="InputField Width80 "
+                                    title="" datatype="select" require="none">
+                                <option value="0">--请选择--</option>
+                                <option value="1">--上午--</option>
+                                <option value="2">--下午--</option>
+                            </select>
+                        </span>
+                    </td>
+                    @*<td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">开始时间</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtBeginDate" class="InputField Width80 dateField" type="text" name="BeginTime" onfocus="this.className='InputFocus Width80 dateField'" onblur="this.className='InputField Width80 dateField'"
+                                   onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', maxDate: '#F{$dp.$D(\'txtEndDate\')||\'%y-%M-%d\'}' });" />
+                        </td>
+                        <td class="TableLabel" nowrap="" width="150">
+                            <span title="" class="TableContent ">结束时间</span>
+                        </td>
+                        <td class="TableData Width40">
+                            <input id="txtEndDate" class="InputField Width80 dateField"
+                                   onfocus="this.className='InputFocus Width80 dateField'" onblur="this.className='InputField Width80 dateField'"
+                                   onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', minDate: '#F{$dp.$D(\'txtBeginDate\')}'});" title="完成日期"
+                                   datatype="date" require="none" name="EndTime">
+                            </input>
+                        </td>*@
+                </tr>
+                <tr id="Tr6">
+                    <td class="TableLabel" nowrap="" width="150">
+                        <span title="">备注</span>
+                    </td>
+                    <td class="TableData Width90" colspan="7">
+                        <input class="display_none" value="@Model.CreatorID" name="CreatorID"></input>
+                        <input id="txtCreateBy" class="display_none" value="@Model.CreateBy" name="CreateBy"></input>
+                        <input id="txtCreatDate" class="display_none" value="@Model.CreateDate" name="CreateDate"></input>
+                        <textarea rows="5" class="InputField Width90 " id="Remark" name="Remark">@Model.Remark</textarea>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="table-wrapper">
+            <div>
+            </div><table width="100%" cellspacing="0" border="0" align="center" class="App_TableBlock" id="Table5">
+                <tbody>
+                    <tr>
+                        <td class="TableHeader" colspan="4">
+                            可预约信息
+                        </td>
+                    </tr>
+                    <tr style="display: none;"></tr>
+                </tbody>
+            </table><div style="overflow-x:scroll; padding: 0;margin: 0;" id="gvService_cont">
+                <table cellspacing="0" style="width: 100%; border-collapse: collapse; table-layout: fixed;" id="gvService" class="CRM_TableList">
+                    <tbody>
+                        <tr class="TableHeader TableLine1" id="tableTr">
+                            <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="0">12-08</a></th>
+                            <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="1">12-09</a></th>
+                            <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="2">12-10</a></th>
+                            <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="3">12-11</a></th>
+                            <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="4">12-12</a></th>
+                            <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="5">12-13</a></th>
+                            <th style="width:200px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="6">12-13</a></th>
+                            <th style="width:100px;" scope="col"><span style="cursor: e-resize;" class="resizeDivClass">&nbsp;</span><a href="javascript:;" index="7">&nbsp;</a></th>
+                        </tr>
+                        <tr style="display: table-row;" class="TableLine2">
+                            <td class="kexuan">上午<span>可选</span></td>
+                            <td class="kexuan">上午<span>可选</span></td>
+                            <td class="kexuan">上午<span>可选</span></td>
+                            <td class="kexuan">上午<span>可选</span></td>
+                            <td class="kexuan">上午<span>可选</span></td>
+                            <td class="kexuan">上午<span>可选</span></td>
+                            <td class="kexuan">上午<span>可选</span></td>
+                            <td></td>
+                        </tr>
+                        <tr style="display: table-row;" class="TableLine1">
+                            <td class="yixuan">下午<span>已选</span></td>
+                            <td class="yixuan">下午<span>已选</span></td>
+                            <td class="yixuan">下午<span>已选</span></td>
+                            <td class="yixuan">下午<span>已选</span></td>
+                            <td class="yixuan">下午<span>已选</span></td>
+                            <td class="yixuan">下午<span>已选</span></td>
+                            <td class="yixuan">下午<span>已选</span></td>
+
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <table style="margin: 5px 0" width="100%">
+            <tbody>
+                <tr align="center">
+                    <td>
+                        <input id="btnSave" class="btn-blue" value="保存" type="button" />
+                        @*<input value="取消" class="btn" onclick="window.close();" type="button" crmview="true" />*@
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="client_loader" style="display: none;"></div>
+</form>

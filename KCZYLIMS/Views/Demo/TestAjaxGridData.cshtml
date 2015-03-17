@@ -1,0 +1,102 @@
+﻿@{
+    ViewBag.Title = "TestAjaxGridData";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script src="@Url.Content("~/Scripts/Third/jsrender.min.js")" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#gvPhaseAnalysis").wyGrid({
+            allowAjax: true, urlPath: "/Demo/GetDataSet", pageSize: 5, funcAjaxCallBack: AjaxCallBack ,
+            allowAutoSearch: true,
+            searchOption: {
+                formID: "searchForm",
+                searchID: "btnSearch",
+                searchPath: "/Demo/AjaxHighSearch",
+            }
+            
+        });
+        /*$("#btnSearch").click(function () {
+            var da = $("form").serialize();
+            var keys = da.split('&');
+            var flags = [];
+            for (var i=0;i<keys.length;i++) {
+                var paras = keys[i].split('=');
+                if (paras.length == 2&&paras[1]!="") {
+                    flags.push(paras[0]);
+                }
+            }
+            if (flags.indexOf("SearchFlag")>-1) {
+                flags.pop("SearchFlag");
+            }
+            $("#SearchFlag").val(flags.join(','));
+            $.ajax({
+                type: 'post',
+                url: "/Demo/AjaxHighSearch", //路径为添加方法
+                data: $("form").serialize(), //参数的个数和名字要和方法的名字保持一致
+                success: function (json) //返回的是Json类型的
+                {
+                    AjaxCallBack(json);
+                    $("#gvPhaseAnalysis").wyGrid({  pageSize: 5});
+                }
+            });
+        });*/
+
+    });
+    function AjaxCallBack(data) {
+        var trs = $("#product_template").render(data);
+        $("#gvPhaseAnalysis tr:not(:first)").remove();
+        $("#gvPhaseAnalysis tr:first").after(trs);
+    }
+</script>
+<script id="product_template" type="text/x-jsrender">
+    <tr>
+        <td align="center">
+            <a class="ActionA RecordDetail" title="查看" onclick="openDialogWindow('../ProcessMineralogy/Index?id={{>MyID}}', 1200, 800)" href="javascript:;"></a>
+            <a class="ActionA RecordEdit" title="编辑" onclick="openDialogWindow('../ProcessMineralogy/Index', 1200, 800)" href="javascript:;"></a>
+            <a class="ActionA RecordDel" title="删除" href="javascript:;"></a>
+        </td>
+        <td class="GridNumeric ID_Col">{{>MyID}}</td>
+        <td>{{>MyName}} </td>
+        <td>{{>MyCode}} </td>
+        <td>{{>Principal}}</td>
+        <td>{{>Client}}</td>
+        <td></td>
+    </tr>
+</script>
+<form id="searchForm">
+    <div style="padding: 10px" id="highSearchContent">
+        <span style="padding-left: 20px; padding-top: 15px; font-weight: bold; height: 30px">
+            搜索：
+        </span>
+        <span style="display:inline-block;">
+            <span style="margin-right:10px;">序号:</span>
+            <input type="text" style="margin-right:10px;"  name="MyID">
+        </span>
+        <span style="display:inline-block;">
+            <span style="margin-right:10px;">项目名称:</span>
+            <input type="text" style="margin-right:10px;" name="MyName">
+        </span>
+        <span style="display:inline-block;">
+            <span style="margin-right:10px;">项目编号:</span>
+            <input type="text" style="margin-right:10px;" name="MyCode">
+        </span>
+        <input type="hidden" id="SearchFlag" name="SearchFlag" />
+        <input type="button" class="btn-green" id="btnSearch" value="搜索" name="btnSearch">
+        <input type="button" class="btn-green" id="btnRefresh" value="全部" name="btnRefresh" onclick=" location.replace(location.href)">
+    </div>
+</form>
+<div id="mainTable">
+    <table cellspacing="0" style="width:100%;border-collapse:collapse;" id="gvPhaseAnalysis">
+        <tbody>
+            <tr>
+                <th style="width:70px;" scope="col">操作</th>
+                <th style="width:80px;" scope="col">序号</th>
+                <th style="width:200px;" scope="col">项目名称</th>
+                <th style="width:200px;" scope="col">项目编号</th>
+                <th style="width:200px;" scope="col">负责人</th>
+                <th style="width:200px;" scope="col">客户名称</th>
+                <th style="width:1200px;" scope="col"></th>
+            </tr>
+        </tbody>
+    </table>
+</div>

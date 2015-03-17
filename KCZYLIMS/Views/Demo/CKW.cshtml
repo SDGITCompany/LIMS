@@ -1,0 +1,112 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <link href="@Url.Content("~/Content/global.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Content/Style.css")" rel="stylesheet">
+
+    <script src="@Url.Content("~/Scripts/KendoUI/js/jquery.min.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/KendoUI/js/kendo.all.min.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/xPlugin/jquery.wyGrid.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/xPlugin/jquery.spreadtable.js")" type="text/javascript"></script>
+
+    <link href="@Url.Content("~/Scripts/Third/uploadify/uploadify.css")" rel="stylesheet" type="text/css" />
+    <script src="@Url.Content("~/Scripts/Third/uploadify/jquery.uploadify.js")" type="text/javascript"></script>
+
+
+
+    <meta name="viewport" content="width=device-width" />
+    <title>CKW</title>
+
+     
+    <script type="text/javascript">
+        $(function () {
+            //动态增行
+            $("#spread").spreadtable({ "url": "/CommonSvr/TestAjax" });
+            $('#test2').click(function () {
+                $("#spread").OnSave();
+            });
+
+        })
+        $(function () {
+            $('#lbtnUpload').uploadify({
+                'auto': true,
+                'swf': '@Url.Content("~/Scripts/Third/uploadify/uploadify.swf")',
+                'uploader': '/CommonSvr/Upload',
+                'buttonImg': 'upload.png',//浏览按钮的图片的路径 
+                'buttonText': '',
+                'height': 25,
+                'width':46,
+                'wmode': "transparent",
+                'onUploadSuccess': function (file, data, response) {
+                    alert('The file ' + file.name + ' was successfully uploaded with a response of ' + response + ':' + data);
+                }
+            });
+        });
+
+    </script>
+
+
+</head>
+<body>
+
+    <div>
+        <h2>上传东西</h2>
+        <input type="button" value="上x传" class="btn-blue" />
+        <a href="javascript:void(0)" id="lbtnUpload">上传</a>
+    </div>
+
+@using (Html.BeginForm("CKW", "Demo", FormMethod.Post, null))
+{ 
+    <div>
+        <input type="checkbox" name="chk" value="male"/>male
+        <input type="checkbox" name="chk" value="female" />female
+    </div>
+    <input type="submit" value="submit" />
+}
+
+    <div id="test_div">
+        <input id="halifa" type="text" name="myname" />
+        <input type="text" name="mycode" />
+        <input type="button" id="test2" value="测试" />
+    </div>
+
+    <div>
+        <table id="spread" style="width:100%">
+            <tr>
+                <th class="TableLabel"></th>
+                <th class="TableLabelNoWidth ">ID</th>
+                <th class="TableLabelNoWidth ">产品编码</th>
+                <th class="TableLabelNoWidth">产品名称</th>
+                <th class="TableLabelNoWidth">规格型号</th>
+            </tr>
+            <tr class="row_tpl">
+                <td>
+                    <a class="x-spread-add">
+                        <span class="k-icon k-i-close">新增</span>
+                    </a>
+                    <a class="x-spread-del">
+                        <span class="k-icon k-i-close ">删除</span>
+                    </a>
+                </td>
+                <td>
+                    <input type="text" class="k-textbox Width90" prop_name="ID" value="" />
+                </td>
+                <td>
+                    <input type="text" class="k-textbox Width90" prop_name="ProductCode" value="" />
+                </td>
+                <td>
+                    <input type="text" class="k-textbox Width90" prop_name="ProductName" value="" />
+                </td>
+                <td>
+                    <input type="text" class="k-textbox Width90" prop_name="ProductModel" value="" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
